@@ -45,7 +45,10 @@
 #' equal to \code{n} yields leave-one-out cross-validation.
 #' @param R  an integer giving the number of replications for repeated 
 #' \eqn{K}-fold cross-validation.  This is ignored for for leave-one-out 
-#' cross-validation.
+#' cross-validation and other non-random splits of the data.
+#' @param foldType  a character string specifying the type of folds to be 
+#' generated.  Possible values are \code{"random"} (the default), 
+#' \code{"consecutive"} or \code{"interleaved"}.
 #' @param folds  an object of class \code{"cvFolds"} giving the folds of the 
 #' data for cross-validation (as returned by \code{\link{cvFolds}}).  If 
 #' supplied, this is preferred over \code{K} and \code{R}.
@@ -98,8 +101,9 @@ NULL
 #' @export
 
 ## LS regression 
-cvLm <- function(object, cost=rmspe, K = 5, R = 1, folds = NULL, 
-        seed = NULL, ...) {
+cvLm <- function(object, cost=rmspe, K = 5, R = 1, 
+        foldType = c("random", "consecutive", "interleaved"), 
+        folds = NULL, seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
     # retrieve data from model fit
@@ -121,8 +125,9 @@ cvLm <- function(object, cost=rmspe, K = 5, R = 1, folds = NULL,
     }
     if(is.null(y <- object$y)) y <- model.response(data)
     ## call function cvFit() to perform cross-validation
-    out <- cvFit(object, data=data, y=y, cost=cost, K=K, R=R, folds=folds, 
-        costArgs=list(...), envir=parent.frame(), seed=seed)
+    out <- cvFit(object, data=data, y=y, cost=cost, K=K, R=R, 
+        foldType=foldType, folds=folds, costArgs=list(...), 
+        envir=parent.frame(), seed=seed)
     out$call <- matchedCall
     out
 }
@@ -134,8 +139,9 @@ cvLm <- function(object, cost=rmspe, K = 5, R = 1, folds = NULL,
 #' @export
 
 ## MM and SDMD regression
-cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1, folds = NULL, 
-        seed = NULL, ...) {
+cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1, 
+        foldType = c("random", "consecutive", "interleaved"), 
+        folds = NULL, seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
     # retrieve data from model fit
@@ -157,8 +163,9 @@ cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1, folds = NULL,
     }
     if(is.null(y <- object$y)) y <- model.response(data)
     ## call function cvFit() to perform cross-validation
-    out <- cvFit(object, data=data, y=y, cost=cost, K=K, R=R, folds=folds, 
-        costArgs=list(...), envir=parent.frame(), seed=seed)
+    out <- cvFit(object, data=data, y=y, cost=cost, K=K, R=R, 
+        foldType=foldType, folds=folds, costArgs=list(...), 
+        envir=parent.frame(), seed=seed)
     out$call <- matchedCall
     out
 }
@@ -170,8 +177,10 @@ cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1, folds = NULL,
 #' @export
 
 ## LTS regression
-cvLts <- function(object, cost = rtmspe, K = 5, R = 1, folds = NULL, 
-        fit = c("reweighted", "raw", "both"), seed = NULL, ...) {
+cvLts <- function(object, cost = rtmspe, K = 5, R = 1, 
+        foldType = c("random", "consecutive", "interleaved"), 
+        folds = NULL, fit = c("reweighted", "raw", "both"), 
+        seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
     object <- object
@@ -199,8 +208,8 @@ cvLts <- function(object, cost = rtmspe, K = 5, R = 1, folds = NULL,
     call$data <- NULL
     call$intercept <- object$intercept
     ## call function cvFit() to perform cross-validation
-    out <- cvFit(call, x=x, y=y, cost=cost, K=K, R=R, folds=folds, 
-        predictArgs=list(fit=fit), costArgs=list(...), 
+    out <- cvFit(call, x=x, y=y, cost=cost, K=K, R=R, foldType=foldType, 
+        folds=folds, predictArgs=list(fit=fit), costArgs=list(...), 
         envir=parent.frame(), seed=seed)
     out$call <- matchedCall
     out

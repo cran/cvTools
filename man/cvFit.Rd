@@ -9,18 +9,21 @@
  cvFit(object, ...)
 
  \method{cvFit}{default} (object, data = NULL, x = NULL, y,
-     cost = rmspe, K = 5, R = 1, folds = NULL, names =
+     cost = rmspe, K = 5, R = 1, foldType = c("random",
+     "consecutive", "interleaved"), folds = NULL, names =
      NULL, predictArgs = list(), costArgs = list(), envir =
      parent.frame(), seed = NULL, ...)
 
  \method{cvFit}{function} (object, formula, data = NULL, x
      = NULL, y, args = list(), cost = rmspe, K = 5, R = 1,
+     foldType = c("random", "consecutive", "interleaved"),
      folds = NULL, names = NULL, predictArgs = list(),
      costArgs = list(), envir = parent.frame(), seed =
      NULL, ...)
 
  \method{cvFit}{call} (object, data = NULL, x = NULL, y,
-     cost = rmspe, K = 5, R = 1, folds = NULL, names =
+     cost = rmspe, K = 5, R = 1, foldType = c("random",
+     "consecutive", "interleaved"), folds = NULL, names =
      NULL, predictArgs = list(), costArgs = list(), envir =
      parent.frame(), seed = NULL, ...)
 }
@@ -68,7 +71,13 @@
 
   \item{R}{an integer giving the number of replications for
   repeated \eqn{K}-fold cross-validation.  This is ignored
-  for for leave-one-out cross-validation.}
+  for for leave-one-out cross-validation and other
+  non-random splits of the data.}
+
+  \item{foldType}{a character string specifying the type of
+  folds to be generated.  Possible values are
+  \code{"random"} (the default), \code{"consecutive"} or
+  \code{"interleaved"}.}
 
   \item{folds}{an object of class \code{"cvFolds"} giving
   the folds of the data for cross-validation (as returned

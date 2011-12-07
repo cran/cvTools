@@ -12,8 +12,8 @@ and assist users with model selection.
 \tabular{ll}{
 Package: \tab cvTools\cr
 Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2011-11-07\cr
+Version: \tab 0.1.1\cr
+Date: \tab 2011-12-07\cr
 Depends: \tab 
 lattice,
 robustbase\cr

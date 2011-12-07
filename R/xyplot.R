@@ -75,7 +75,7 @@ xyplot.cvTuning <- function(x, data, subset = NULL, select = NULL, ...) {
 }
 
 
-# internal function for xy-plots
+# internal function for x-y plots
 localXyplot <- function(CV, tuning = NULL, type, xlab, ylab = "CV results", ...,
         # the following arguments are defined so that they aren't supplied twice
         x, formula, data, groups) {

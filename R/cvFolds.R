@@ -20,7 +20,10 @@
 #' yields leave-one-out cross-validation.
 #' @param R  an integer giving the number of replications for repeated 
 #' \eqn{K}-fold cross-validation.  This is ignored for for leave-one-out 
-#' cross-validation.
+#' cross-validation and other non-random splits of the data.
+#' @param type  a character string specifying the type of folds to be 
+#' generated.  Possible values are \code{"random"} (the default), 
+#' \code{"consecutive"} or \code{"interleaved"}.
 #' 
 #' @returnClass cvFolds
 #' @returnItem n  an integer giving the number of observations.
@@ -37,34 +40,40 @@
 #' 
 #' @examples 
 #' set.seed(1234)  # set seed for reproducibility
-#' cvFolds(20, K=5)
-#' cvFolds(20, K=5, R=10)
+#' cvFolds(20, K = 5, type = "random")
+#' cvFolds(20, K = 5, type = "consecutive")
+#' cvFolds(20, K = 5, type = "interleaved")
+#' cvFolds(20, K = 5, R = 10)
 #' 
 #' @keywords utilities
 #' 
 #' @export 
 
-cvFolds <- function(n, K = 5, R = 1) {
+cvFolds <- function(n, K = 5, R = 1, 
+        type = c("random", "consecutive", "interleaved")) {
     # check arguments
     n <- round(rep(n, length.out=1))
     if(!isTRUE(n > 0)) stop("'n' must be positive")
     K <- round(rep(K, length.out=1))
     if(!isTRUE((K > 1) && K <= n)) stop("'K' outside allowable range")
-    if(K == n) {
-        # leave-one-out CV
-        R <- 1
-        subsets <- as.matrix(seq_len(n))
-    } else {
-        # K-fold CV with R replications
+    type <- if(K == n) "leave-one-out" else match.arg(type)
+    # obtain CV folds
+    if(type == "random") {
+        # random K-fold splits with R replications
         R <- round(rep(R, length.out=1))
         if(!isTRUE(R > 0)) R <- 1
         subsets <- replicate(R, sample(n))
+    } else {
+        # leave-one-out CV or non-random splits, replication not meaningful
+        R <- 1
+        subsets <- as.matrix(seq_len(n))
     }
+    which <- rep(seq_len(K), length.out=n)
+    if(type == "consecutive") which <- rep.int(seq_len(K), tabulate(which))
     # construct and return object
-    blocks <- list(n=n, K=K, R=R, subsets=subsets, 
-        which=rep(seq_len(K), length.out=n))
-    class(blocks) <- "cvFolds"
-    blocks
+    folds <- list(n=n, K=K, R=R, subsets=subsets, which=which)
+    class(folds) <- "cvFolds"
+    folds
 }
 
 # retrieve CV folds for r-th replication

@@ -1,8 +1,8 @@
 Package: cvTools
 Type: Package
 Title: Cross-validation tools for regression models
-Version: 0.1
-Date: 2011-11-07
+Version: 0.1.1
+Date: 2011-12-07
 Author: Andreas Alfons
 Maintainer: Andreas Alfons <andreas.alfons@econ.kuleuven.be>
 Depends: R (>= 2.11.0), lattice, robustbase
@@ -15,6 +15,6 @@ Collate: 'accessors.R' 'aggregate.R' 'bwplot.R' 'cost.R' 'cvExamples.R'
         'cvFit.R' 'cvFolds.R' 'cvReshape.R' 'cvSelect.R' 'cvTool.R'
         'cvTuning.R' 'densityplot.R' 'dotplot.R' 'plot.R' 'print.R'
         'subset.R' 'summary.R' 'utils.R' 'xyplot.R'
-Packaged: 2011-11-07 12:48:20 UTC; andi
+Packaged: 2011-12-07 00:15:47 UTC; andi
 Repository: CRAN
-Date/Publication: 2011-11-07 15:03:07
+Date/Publication: 2011-12-07 17:07:24

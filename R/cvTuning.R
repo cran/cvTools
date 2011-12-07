@@ -82,7 +82,10 @@
 #' equal to \code{n} yields leave-one-out cross-validation.
 #' @param R  an integer giving the number of replications for repeated 
 #' \eqn{K}-fold cross-validation.  This is ignored for for leave-one-out 
-#' cross-validation.
+#' cross-validation and other non-random splits of the data.
+#' @param foldType  a character string specifying the type of folds to be 
+#' generated.  Possible values are \code{"random"} (the default), 
+#' \code{"consecutive"} or \code{"interleaved"}.
 #' @param folds  an object of class \code{"cvFolds"} giving the folds of the 
 #' data for cross-validation (as returned by \code{\link{cvFolds}}).  If 
 #' supplied, this is preferred over \code{K} and \code{R}.
@@ -144,8 +147,9 @@ cvTuning <- function(object, ...) UseMethod("cvTuning")
 
 cvTuning.function <- function(object, formula, data = NULL, x = NULL, y, 
         tuning = list(), args = list(), cost = rmspe, K = 5, R = 1, 
-        folds = NULL, names = NULL, predictArgs = list(), 
-        costArgs = list(), envir = parent.frame(), seed = NULL, ...) {
+        foldType = c("random", "consecutive", "interleaved"), folds = NULL, 
+        names = NULL, predictArgs = list(), costArgs = list(), 
+        envir = parent.frame(), seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
     matchedCall[[1]] <- as.name("cvFit")
@@ -166,8 +170,8 @@ cvTuning.function <- function(object, formula, data = NULL, x = NULL, y,
     }
     ## call method for unevaluated function calls
     out <- cvTuning(call, data=data, x=x, y=y, tuning=tuning, cost=cost, 
-        K=K, R=R, folds=folds, names=names, predictArgs=predictArgs, 
-        costArgs=costArgs, envir=envir, seed=seed)
+        K=K, R=R, foldType=foldType, folds=folds, names=names, 
+        predictArgs=predictArgs, costArgs=costArgs, envir=envir, seed=seed)
     out$call <- matchedCall
     out
 }
@@ -177,9 +181,11 @@ cvTuning.function <- function(object, formula, data = NULL, x = NULL, y,
 #' @method cvTuning call
 #' @export
 
-cvTuning.call <- function(object, data = NULL, x = NULL, y, tuning = list(), 
-        cost = rmspe, K = 5, R = 1, folds = NULL, names = NULL, 
-        predictArgs = list(), costArgs = list(), envir = parent.frame(), 
+cvTuning.call <- function(object, data = NULL, x = NULL, y, 
+        tuning = list(), cost = rmspe, K = 5, R = 1, 
+        foldType = c("random", "consecutive", "interleaved"), 
+        folds = NULL, names = NULL, predictArgs = list(), 
+        costArgs = list(), envir = parent.frame(), 
         seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
@@ -199,8 +205,9 @@ cvTuning.call <- function(object, data = NULL, x = NULL, y, tuning = list(),
     pTuning <- ncol(tuning)
     if(nTuning == 0 || pTuning == 0) {
         # use function cvFit() if no tuning parameters are supplied
-        out <- cvFit(object, data, x, y, cost=cost, K=K, R=R, folds=folds, 
-            names=names, predictArgs=predictArgs, costArgs=costArgs, 
+        out <- cvFit(object, data, x, y, cost=cost, K=K, R=R, 
+            foldType=foldType, folds=folds, names=names, 
+            predictArgs=predictArgs, costArgs=costArgs, 
             envir=envir, seed=seed)
         return(out)
     }
@@ -210,7 +217,7 @@ cvTuning.call <- function(object, data = NULL, x = NULL, y, tuning = list(),
         seed <- get(".Random.seed", envir=.GlobalEnv, inherits = FALSE)
     } else set.seed(seed)
     ## compute data blocks as in 'cv.lars'
-    if(is.null(folds)) folds <- cvFolds(n, K, R)
+    if(is.null(folds)) folds <- cvFolds(n, K, R, type=foldType)
     R <- folds$R
     ## perform cross-validation for each combination of tuning parameters
     tuningNames <- names(tuning)

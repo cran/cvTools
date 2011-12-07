@@ -3,7 +3,8 @@
 \alias{print.cvFolds}
 \title{Cross-validation folds}
 \usage{
- cvFolds(n, K = 5, R = 1)
+ cvFolds(n, K = 5, R = 1, type = c("random", "consecutive",
+     "interleaved"))
 }
 \arguments{
   \item{n}{an integer giving the number of observations to
@@ -16,7 +17,13 @@
 
   \item{R}{an integer giving the number of replications for
   repeated \eqn{K}-fold cross-validation.  This is ignored
-  for for leave-one-out cross-validation.}
+  for for leave-one-out cross-validation and other
+  non-random splits of the data.}
+
+  \item{type}{a character string specifying the type of
+  folds to be generated.  Possible values are
+  \code{"random"} (the default), \code{"consecutive"} or
+  \code{"interleaved"}.}
 }
 \value{
   An object of class \code{"cvFolds"} with the following
@@ -42,8 +49,10 @@
 }
 \examples{
 set.seed(1234)  # set seed for reproducibility
-cvFolds(20, K=5)
-cvFolds(20, K=5, R=10)
+cvFolds(20, K = 5, type = "random")
+cvFolds(20, K = 5, type = "consecutive")
+cvFolds(20, K = 5, type = "interleaved")
+cvFolds(20, K = 5, R = 10)
 }
 \author{
   Andreas Alfons
