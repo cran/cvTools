@@ -7,15 +7,15 @@
 \alias{tmspe}
 \title{Prediction loss}
 \usage{
- mspe(y, yHat)
+  mspe(y, yHat, sd = FALSE)
 
- rmspe(y, yHat)
+  rmspe(y, yHat, sd = FALSE)
 
- mape(y, yHat)
+  mape(y, yHat, sd = FALSE)
 
- tmspe(y, yHat, trim = 0.25)
+  tmspe(y, yHat, trim = 0.25, sd = FALSE)
 
- rtmspe(y, yHat, trim = 0.25)
+  rtmspe(y, yHat, trim = 0.25, sd = FALSE)
 }
 \arguments{
   \item{y}{a numeric vector or matrix giving the observed
@@ -26,9 +26,17 @@
 
   \item{trim}{a numeric value giving the trimming
   proportion (the default is 0.25).}
+
+  \item{sd}{a logical indicating whether standard errors
+  should be computed as well.}
 }
 \value{
-  A numeric value giving the prediction loss.
+  If standard errors are not requested, a numeric value
+  giving the prediction loss is returned.
+
+  Otherwise a list is returned, with the first component
+  containing the prediction loss and the second component
+  the corresponding standard error.
 }
 \description{
   Compute the prediction loss of a model.
@@ -47,22 +55,47 @@
   squared prediction error.  A proportion of the largest
   squared differences of the observed and fitted values are
   thereby trimmed.
+
+  Standard errors can be requested via the \code{sd}
+  argument.  Note that standard errors for \code{tmspe} are
+  based on a winsorized standard deviation.  Furthermore,
+  standard errors for \code{rmspe} and \code{rtmspe} are
+  computed from the respective standard errors of
+  \code{mspe} and \code{tmspe} via the delta method.
 }
 \examples{
 # fit an MM-regression model
-library("robustbase")
 data("coleman")
 fit <- lmrob(Y~., data=coleman)
 
-# compute the prediction loss
+# compute the prediction loss from the fitted values
+# (hence the prediction loss is underestimated in this simple
+# example since all observations are used to fit the model)
 mspe(coleman$Y, predict(fit))
 rmspe(coleman$Y, predict(fit))
 mape(coleman$Y, predict(fit))
-tmspe(coleman$Y, predict(fit), trim=0.1)
-rtmspe(coleman$Y, predict(fit), trim=0.1)
+tmspe(coleman$Y, predict(fit), trim = 0.1)
+rtmspe(coleman$Y, predict(fit), trim = 0.1)
+
+# include standard error
+mspe(coleman$Y, predict(fit), sd = TRUE)
+rmspe(coleman$Y, predict(fit), sd = TRUE)
+mape(coleman$Y, predict(fit), sd = TRUE)
+tmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
+rtmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
 }
 \author{
   Andreas Alfons
+}
+\references{
+  Tukey, J.W. and McLaughlin, D.H. (1963) Less vulnerable
+  confidence and significance procedures for location based
+  on a single sample: Trimming/winsorization.
+  \emph{Sankhya: The Indian Journal of Statistics, Series
+  A}, \bold{25}(3), 331--352
+
+  Oehlert, G.W. (1992) A note on the delta method.
+  \emph{The American Statistician}, \bold{46}(1), 27--29.
 }
 \seealso{
   \code{\link{cvFit}}, \code{\link{cvTuning}}

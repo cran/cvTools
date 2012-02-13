@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' @S3method print cvFolds
@@ -55,7 +55,7 @@ print.cvSelect <- print.summary.cvSelect <- function(x, best = TRUE, ...) {
         } else cat(sprintf("\n%d-fold CV results:\n", K))
     } else cat("\nCV results:\n")
     print(x$cv, ...)
-    # print optimal value for tuning parameters if requested
+    # print optimal model if requested
     if(isTRUE(best)) {
         cat("\nBest model:\n")
         best <- x$best

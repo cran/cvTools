@@ -12,11 +12,16 @@ and assist users with model selection.
 \tabular{ll}{
 Package: \tab cvTools\cr
 Type: \tab Package\cr
-Version: \tab 0.1.1\cr
-Date: \tab 2011-12-07\cr
+Version: \tab 0.2.0\cr
+Date: \tab 2012-02-13\cr
 Depends: \tab 
+R (>= 2.11.0),
 lattice,
 robustbase\cr
+Imports: \tab 
+lattice,
+robustbase,
+stats\cr
 License: \tab GPL (>= 2)\cr
 LazyLoad: \tab yes\cr
 }
@@ -29,7 +34,6 @@ aggregate.cv            Aggregate cross-validation results
 bwplot.cv               Box-and-whisker plots of cross-validation
                         results
 cost                    Prediction loss
-cvExamples              Cross-validation for linear models
 cvFit                   Cross-validation for model evaluation
 cvFolds                 Cross-validation folds
 cvReshape               Reshape cross-validation results
@@ -39,11 +43,12 @@ cvTools-package         Cross-validation tools for regression models
 cvTuning                Cross-validation for tuning parameter selection
 densityplot.cv          Kernel density plots of cross-validation
                         results
-dotplot.cvSelect        Dot plots of cross-validation results
+dotplot.cv              Dot plots of cross-validation results
 plot.cv                 Plot cross-validation results
+repCV                   Cross-validation for linear models
 subset.cv               Subsetting cross-validation results
 summary.cv              Summarize cross-validation results
-xyplot.cvSelect         X-Y plots of cross-validation results
+xyplot.cv               X-Y plots of cross-validation results
 }
 }
 \author{

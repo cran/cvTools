@@ -8,17 +8,17 @@
 \alias{nfits}
 \title{Access or set information on cross-validation results}
 \usage{
- cvNames(x)
+  cvNames(x)
 
- cvNames(x) <- value
+  cvNames(x) <- value
 
- fits(x)
+  fits(x)
 
- fits(x) <- value
+  fits(x) <- value
 
- ncv(x)
+  ncv(x)
 
- nfits(x)
+  nfits(x)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{"cv"} or
@@ -62,14 +62,14 @@ folds <- cvFolds(nrow(coleman), K = 5, R = 10)
 
 
 ## compare raw and reweighted LTS estimators for 
-## 50% and 75% subsets
+## 50\% and 75\% subsets
 
-# 50% subsets
+# 50\% subsets
 fitLts50 <- ltsReg(Y ~ ., data = coleman, alpha = 0.5)
 cvFitLts50 <- cvLts(fitLts50, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)
 
-# 75% subsets
+# 75\% subsets
 fitLts75 <- ltsReg(Y ~ ., data = coleman, alpha = 0.75)
 cvFitLts75 <- cvLts(fitLts75, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)

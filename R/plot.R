@@ -1,7 +1,28 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
+
+# workhorse function
+plotCV <- function(x, 
+        method = c("bwplot", "densityplot", "xyplot", "dotplot"), ...) {
+    ## initializations
+    if(all(x$R == 1)) {
+        choices <- eval(formals(sys.function())[["method"]])
+        if(identical(method, choices)) {
+            method <- "xyplot"
+        } else method <- match.arg(method, c("xyplot", "dotplot"))
+    } else method <- match.arg(method)
+    ## call plot function
+    if(method == "bwplot") {
+        bwplot(x, ...)
+    } else if(method == "densityplot") {
+        densityplot(x, ...)
+    } else if(method == "xyplot") {
+        xyplot(x, ...)
+    } else dotplot(x, ...)
+}
+
 
 #' Plot cross-validation results
 #' 
@@ -49,32 +70,37 @@
 #' 
 #' @export
 
-plot.cv <- function(x, method = c("bwplot", "densityplot"), ...) {
-    ## initializations
-    method <- match.arg(method)
-    ## call plot function
-    if(method == "bwplot") {
-        bwplot(x, ...)
-    } else densityplot(x, ...)
-}
+#plot.cv <- function(x, method = c("bwplot", "densityplot"), ...) {
+#    ## initializations
+#    method <- match.arg(method)
+#    ## call plot function
+#    if(method == "bwplot") {
+#        bwplot(x, ...)
+#    } else densityplot(x, ...)
+#}
+plot.cv <- plotCV
 
 
 #' @rdname plot.cv
 #' @method plot cvSelect
 #' @export
 
-plot.cvSelect <- function(x, 
-        method = c("bwplot", "densityplot", "xyplot", "dotplot"), ...) {
-    ## initializations
-    if(all(x$R == 1)) {
-        method <- match.arg(method, c("xyplot", "dotplot"))
-    } else method <- match.arg(method)
-    ## call plot function
-    if(method == "bwplot") {
-        bwplot(x, ...)
-    } else if(method == "densityplot") {
-        densityplot(x, ...)
-    } else if(method == "xyplot") {
-        xyplot(x, ...)
-    } else dotplot(x, ...)
-}
+#plot.cvSelect <- function(x, 
+#        method = c("bwplot", "densityplot", "xyplot", "dotplot"), ...) {
+#    ## initializations
+#    if(all(x$R == 1)) {
+#        choices <- eval(formals(sys.function())[["method"]])
+#        if(identical(method, choices)) {
+#            method <- "xyplot"
+#        } else method <- match.arg(method, c("xyplot", "dotplot"))
+#    } else method <- match.arg(method)
+#    ## call plot function
+#    if(method == "bwplot") {
+#        bwplot(x, ...)
+#    } else if(method == "densityplot") {
+#        densityplot(x, ...)
+#    } else if(method == "xyplot") {
+#        xyplot(x, ...)
+#    } else dotplot(x, ...)
+#}
+plot.cvSelect <- plotCV

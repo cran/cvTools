@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Summarize cross-validation results

@@ -5,20 +5,22 @@
 \alias{print.cvTuning}
 \title{Cross-validation for tuning parameter selection}
 \usage{
- cvTuning(object, ...)
+  cvTuning(object, ...)
 
- \method{cvTuning}{function} (object, formula, data = NULL,
-     x = NULL, y, tuning = list(), args = list(), cost =
-     rmspe, K = 5, R = 1, foldType = c("random",
-     "consecutive", "interleaved"), folds = NULL, names =
-     NULL, predictArgs = list(), costArgs = list(), envir =
-     parent.frame(), seed = NULL, ...)
+  \method{cvTuning}{function} (object, formula,
+    data = NULL, x = NULL, y, tuning = list(),
+    args = list(), cost = rmspe, K = 5, R = 1,
+    foldType = c("random", "consecutive", "interleaved"),
+    folds = NULL, names = NULL, predictArgs = list(),
+    costArgs = list(), selectBest = c("min", "hastie"),
+    sdFactor = 1, envir = parent.frame(), seed = NULL, ...)
 
- \method{cvTuning}{call} (object, data = NULL, x = NULL, y,
-     tuning = list(), cost = rmspe, K = 5, R = 1, foldType
-     = c("random", "consecutive", "interleaved"), folds =
-     NULL, names = NULL, predictArgs = list(), costArgs =
-     list(), envir = parent.frame(), seed = NULL, ...)
+  \method{cvTuning}{call} (object, data = NULL, x = NULL,
+    y, tuning = list(), cost = rmspe, K = 5, R = 1,
+    foldType = c("random", "consecutive", "interleaved"),
+    folds = NULL, names = NULL, predictArgs = list(),
+    costArgs = list(), selectBest = c("min", "hastie"),
+    sdFactor = 1, envir = parent.frame(), seed = NULL, ...)
 }
 \arguments{
   \item{object}{a function or an unevaluated function call
@@ -55,9 +57,12 @@
   \item{cost}{a cost function measuring prediction loss.
   It should expect the observed values of the response to
   be passed as the first argument and the predicted values
-  as the second argument, and must return a non-negative
-  scalar value.  The default is to use the root mean
-  squared prediction error (see \code{\link{cost}}).}
+  as the second argument, and must return either a
+  non-negative scalar value, or a list with the first
+  component containing the prediction error and the second
+  component containing the standard error.  The default is
+  to use the root mean squared prediction error (see
+  \code{\link{cost}}).}
 
   \item{K}{an integer giving the number of groups into
   which the data should be split (the default is five).
@@ -90,6 +95,25 @@
 
   \item{costArgs}{a list of additional arguments to be
   passed to the prediction loss function \code{cost}.}
+
+  \item{selectBest}{a character string specifying a
+  criterion for selecting the best model.  Possible values
+  are \code{"min"} (the default) or \code{"hastie"}.  The
+  former selects the model with the smallest prediction
+  error.  The latter is useful for models with a tuning
+  parameter controlling the complexity of the model (e.g.,
+  penalized regression).  It selects the most parsimonious
+  model whose prediction error is no larger than
+  \code{sdFactor} standard errors above the prediction
+  error of the best overall model.  Note that the models
+  are thereby assumed to be ordered from the most
+  parsimonious one to the most complex one.  In particular
+  a one-standard-error rule is frequently applied.}
+
+  \item{sdFactor}{a numeric value giving a multiplication
+  factor of the standard error for the selection of the
+  best model.  This is ignored if \code{selectBest} is
+  \code{"min"}.}
 
   \item{envir}{the \code{\link{environment}} in which to
   evaluate the function call for fitting the models (see
@@ -125,6 +149,17 @@
   prediction errors for all combinations of tuning
   parameter values.  For repeated cross-validation, those
   are average values over all replications.}
+
+  \item{sd}{a data frame containing the estimated standard
+  errors of the prediction loss for all combinations of
+  tuning parameter values.}
+
+  \item{selectBest}{a character string specifying the
+  criterion used for selecting the best model.}
+
+  \item{sdFactor}{a numeric value giving the multiplication
+  factor of the standard error used for the selection of
+  the best model.}
 
   \item{reps}{a data frame containing the estimated
   prediction errors from all replications for all
@@ -206,7 +241,7 @@
 library("robustbase")
 data("coleman")
 
-## evaluate MM regression models tuned for 85% and 95% efficiency
+## evaluate MM regression models tuned for 85\% and 95\% efficiency
 tuning <- list(tuning.psi = c(3.443689, 4.685061))
 
 ## via model fitting function
@@ -227,6 +262,11 @@ cvTuning(call, data = coleman, y = coleman$Y, tuning = tuning,
 }
 \author{
   Andreas Alfons
+}
+\references{
+  Hastie, T., Tibshirani, R. and Friedman, J. (2009)
+  \emph{The Elements of Statistical Learning: Data Mining,
+  Inference, and Prediction}.  Springer, 2nd edition.
 }
 \seealso{
   \code{\link{cvTool}}, \code{\link{cvFit}},

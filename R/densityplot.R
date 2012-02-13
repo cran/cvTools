@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Kernel density plots of cross-validation results

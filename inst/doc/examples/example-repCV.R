@@ -7,14 +7,14 @@ folds <- cvFolds(nrow(coleman), K = 5, R = 10)
 
 # perform cross-validation for an LS regression model
 fitLm <- lm(Y ~ ., data = coleman)
-cvLm(fitLm, cost = rtmspe, folds = folds, trim = 0.1)
+repCV(fitLm, cost = rtmspe, folds = folds, trim = 0.1)
 
 # perform cross-validation for an MM regression model
 fitLmrob <- lmrob(Y ~ ., data = coleman)
-cvLmrob(fitLmrob, cost = rtmspe, folds = folds, trim = 0.1)
+repCV(fitLmrob, cost = rtmspe, folds = folds, trim = 0.1)
 
 # perform cross-validation for an LTS regression model
 fitLts <- ltsReg(Y ~ ., data = coleman)
-cvLts(fitLts, cost = rtmspe, folds = folds, trim = 0.1)
-cvLts(fitLts, cost = rtmspe, folds = folds, 
+repCV(fitLts, cost = rtmspe, folds = folds, trim = 0.1)
+repCV(fitLts, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)

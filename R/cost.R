@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Prediction loss
@@ -18,6 +18,12 @@
 #' squared prediction error.  A proportion of the largest squared differences 
 #' of the observed and fitted values are thereby trimmed.
 #' 
+#' Standard errors can be requested via the \code{sd} argument.  Note that 
+#' standard errors for \code{tmspe} are based on a winsorized standard 
+#' deviation.  Furthermore, standard errors for \code{rmspe} and \code{rtmspe} 
+#' are computed from the respective standard errors of \code{mspe} and 
+#' \code{tmspe} via the delta method.
+#' 
 #' @rdname cost
 #' @name cost
 #' 
@@ -26,25 +32,48 @@
 #' giving the fitted values.
 #' @param trim  a numeric value giving the trimming proportion (the default is 
 #' 0.25).
+#' @param sd  a logical indicating whether standard errors should be computed 
+#' as well.
 #' 
-#' @return A numeric value giving the prediction loss.
+#' @return If standard errors are not requested, a numeric value giving the 
+#' prediction loss is returned.
+#' 
+#' Otherwise a list is returned, with the first component containing the 
+#' prediction loss and the second component the corresponding standard error.
 #' 
 #' @author Andreas Alfons
+#' 
+#' @references 
+#' Tukey, J.W. and McLaughlin, D.H. (1963) Less vulnerable confidence and 
+#' significance procedures for location based on a single sample: 
+#' Trimming/winsorization.  \emph{Sankhya: The Indian Journal of Statistics, 
+#' Series A}, \bold{25}(3), 331--352
+#' 
+#' Oehlert, G.W. (1992) A note on the delta method.  \emph{The American 
+#' Statistician}, \bold{46}(1), 27--29.
 #' 
 #' @seealso \code{\link{cvFit}}, \code{\link{cvTuning}}
 #' 
 #' @examples 
 #' # fit an MM-regression model
-#' library("robustbase")
 #' data("coleman")
 #' fit <- lmrob(Y~., data=coleman)
 #' 
-#' # compute the prediction loss
+#' # compute the prediction loss from the fitted values
+#' # (hence the prediction loss is underestimated in this simple 
+#' # example since all observations are used to fit the model)
 #' mspe(coleman$Y, predict(fit))
 #' rmspe(coleman$Y, predict(fit))
 #' mape(coleman$Y, predict(fit))
-#' tmspe(coleman$Y, predict(fit), trim=0.1)
-#' rtmspe(coleman$Y, predict(fit), trim=0.1)
+#' tmspe(coleman$Y, predict(fit), trim = 0.1)
+#' rtmspe(coleman$Y, predict(fit), trim = 0.1)
+#' 
+#' # include standard error
+#' mspe(coleman$Y, predict(fit), sd = TRUE)
+#' rmspe(coleman$Y, predict(fit), sd = TRUE)
+#' mape(coleman$Y, predict(fit), sd = TRUE)
+#' tmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
+#' rtmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
 #' 
 #' @keywords utilities
 
@@ -53,45 +82,78 @@ NULL
 ## mean squared prediction error
 #' @rdname cost
 #' @export
-mspe <- function(y, yHat) {
+mspe <- function(y, yHat, sd = FALSE) {
     residuals2 <- (y - yHat)^2  # squared residuals
     if(!is.null(dim(y))) {
         residuals2 <- rowSums(residuals2)  # squared norm in multivariate case
     }
-    mean(residuals2)
+    res <- mean(residuals2)
+    if(isTRUE(sd)) {
+        res <- list(mspe=res, sd=sd(residuals2)/sqrt(nobs(residuals2)))
+    }
+    res
 }
 
 ## root mean squared prediction error
 #' @rdname cost
 #' @export
-rmspe <- function(y, yHat) sqrt(mspe(y, yHat))
+rmspe <- function(y, yHat, sd = FALSE) {
+    res <- mspe(y, yHat, sd=sd)
+    if(isTRUE(sd)) {
+        rmspe <- sqrt(res$mspe)
+        res <- list(rmspe=rmspe, sd=res$sd/(2*rmspe))
+    } else res <- sqrt(res)
+    res
+}
 
 ## mean absolute prediction error
 #' @rdname cost
 #' @export
-mape <- function(y, yHat) {
+mape <- function(y, yHat, sd = FALSE) {
     absResiduals <- abs(y - yHat)  # absolue residuals
     if(!is.null(dim(y))) {
         absResiduals <- rowSums(absResiduals)  # norm in multivariate case
     }
-    mean(absResiduals)
+    res <- mean(absResiduals)
+    if(isTRUE(sd)) {
+        res <- list(mape=res, sd=sd(absResiduals)/sqrt(nobs(absResiduals)))
+    }
+    res
 }
 
 ## trimmed mean squared prediction error
 #' @rdname cost
 #' @export
-tmspe <- function(y, yHat, trim=0.25) {
+tmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
     n <- nobs(y)
     h <- n - floor(n*trim)
     residuals2 <- (y - yHat)^2  # squared residuals
     if(!is.null(dim(y))) {
         residuals2 <- rowSums(residuals2)  # squared norm in multivariate case
     }
-    residuals2 <- sort(residuals2)[1:h]  # select h smallest values
-    mean(residuals2)
+    residuals2 <- sort(residuals2)       # sort squared residuals
+    res <- mean(residuals2[seq_len(h)])  # mean over h smallest values
+    if(isTRUE(sd)) {
+        # standard error of the trimmed mean is based on a winsorized 
+        # standard deviation
+        alpha <- 1 - trim
+        if(h < n) {
+            q <- quantile(residuals2, alpha)  # quantile for winsorization
+            residuals2[(h+1):n] <- q          # replace tail with quantile
+        }
+        res <- list(tmspe=res, sd=sd(residuals2)/(alpha*sqrt(n)))
+    }
+    res
 }
 
 ## root trimmed mean squared prediction error
 #' @rdname cost
 #' @export
-rtmspe <- function(y, yHat, trim=0.25) sqrt(tmspe(y, yHat, trim=trim))
+rtmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
+    res <- tmspe(y, yHat, trim=trim, sd=sd)
+    if(isTRUE(sd)) {
+        rtmspe <- sqrt(res$tmspe)
+        res <- list(rtmspe=rtmspe, sd=res$sd/(2*rtmspe))
+    } else res <- sqrt(res)
+    res
+}

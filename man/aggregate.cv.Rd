@@ -4,12 +4,13 @@
 \alias{aggregate.cvTuning}
 \title{Aggregate cross-validation results}
 \usage{
- \method{aggregate}{cv} (x, FUN = mean, select = NULL, ...)
+  \method{aggregate}{cv} (x, FUN = mean, select = NULL,
+    ...)
 
- \method{aggregate}{cvSelect} (x, FUN = mean, select =
-     NULL, ...)
+  \method{aggregate}{cvSelect} (x, FUN = mean,
+    select = NULL, ...)
 
- \method{aggregate}{cvTuning} (x, ...)
+  \method{aggregate}{cvTuning} (x, ...)
 }
 \arguments{
   \item{x}{an object inheriting from class \code{"cv"} or
@@ -53,14 +54,14 @@ folds <- cvFolds(nrow(coleman), K = 5, R = 10)
 
 
 ## compare raw and reweighted LTS estimators for 
-## 50% and 75% subsets
+## 50\% and 75\% subsets
 
-# 50% subsets
+# 50\% subsets
 fitLts50 <- ltsReg(Y ~ ., data = coleman, alpha = 0.5)
 cvFitLts50 <- cvLts(fitLts50, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)
 
-# 75% subsets
+# 75\% subsets
 fitLts75 <- ltsReg(Y ~ ., data = coleman, alpha = 0.75)
 cvFitLts75 <- cvLts(fitLts75, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)
@@ -69,14 +70,14 @@ cvFitLts75 <- cvLts(fitLts75, cost = rtmspe, folds = folds,
 cvFitsLts <- cvSelect("0.5" = cvFitLts50, "0.75" = cvFitLts75)
 cvFitsLts
 
-# summary of the results with the 50% subsets
+# summary of the results with the 50\% subsets
 aggregate(cvFitLts50, summary)
 # summary of the combined results
 aggregate(cvFitsLts, summary)
 
 
 ## evaluate MM regression models tuned for 
-## 80%, 85%, 90% and 95% efficiency
+## 80\%, 85\%, 90\% and 95\% efficiency
 tuning <- list(tuning.psi=c(3.14, 3.44, 3.88, 4.68))
 
 # set up function call

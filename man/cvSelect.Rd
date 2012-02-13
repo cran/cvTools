@@ -3,7 +3,8 @@
 \alias{print.cvSelect}
 \title{Model selection based on cross-validation}
 \usage{
- cvSelect(..., .reshape = FALSE)
+  cvSelect(..., .reshape = FALSE,
+    .selectBest = c("min", "hastie"), .sdFactor = 1)
 }
 \arguments{
   \item{\dots}{objects inheriting from class \code{"cv"} or
@@ -13,6 +14,26 @@
   more than one column of cross-validation results should
   be reshaped to have only one column (see
   \dQuote{Details}).}
+
+  \item{.selectBest}{a character string specifying a
+  criterion for selecting the best model.  Possible values
+  are \code{"min"} (the default) or \code{"hastie"}.  The
+  former selects the model with the smallest prediction
+  error.  The latter is useful for nested models or for
+  models with a tuning parameter controlling the complexity
+  of the model (e.g., penalized regression).  It selects
+  the most parsimonious model whose prediction error is no
+  larger than \code{.sdFactor} standard errors above the
+  prediction error of the best overall model.  Note that
+  the models are thereby assumed to be ordered from the
+  most parsimonious one to the most complex one.  In
+  particular a one-standard-error rule is frequently
+  applied.}
+
+  \item{.sdFactor}{a numeric value giving a multiplication
+  factor of the standard error for the selection of the
+  best model.  This is ignored if \code{.selectBest} is
+  \code{"min"}.}
 }
 \value{
   An object of class \code{"cvSelect"} with the following
@@ -34,6 +55,16 @@
   prediction errors for the models.  For models for which
   repeated cross-validation was performed, those are
   average values over all replications.}
+
+  \item{sd}{a data frame containing the estimated standard
+  errors of the prediction loss for the models.}
+
+  \item{selectBest}{a character string specifying the
+  criterion used for selecting the best model.}
+
+  \item{sdFactor}{a numeric value giving the multiplication
+  factor of the standard error used for the selection of
+  the best model.}
 
   \item{reps}{a data frame containing the estimated
   prediction errors from all replications for those models
@@ -70,8 +101,9 @@
   \code{\link{cvReshape}} to have only one column.  Then
   the best overall model is selected.
 
-  It should also be noted that the \code{.reshape} argument
-  starts with a dot to avoid conflicts with the argument
+  It should also be noted that the argument names of
+  \code{.reshape}, \code{.selectBest} and \code{.sdFacor}
+  start with a dot to avoid conflicts with the argument
   names used for the objects containing cross-validation
   results.
 }
@@ -115,14 +147,14 @@ cvSelect(LS = cvFitLm, MM = cvFitLmrob, LTS = cvFitLts)
 
 
 ## compare raw and reweighted LTS estimators for 
-## 50% and 75% subsets
+## 50\% and 75\% subsets
 
-# 50% subsets
+# 50\% subsets
 fitLts50 <- ltsReg(Y ~ ., data = coleman, alpha = 0.5)
 cvFitLts50 <- cvLts(fitLts50, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)
 
-# 75% subsets
+# 75\% subsets
 fitLts75 <- ltsReg(Y ~ ., data = coleman, alpha = 0.75)
 cvFitLts75 <- cvLts(fitLts75, cost = rtmspe, folds = folds, 
     fit = "both", trim = 0.1)
@@ -132,6 +164,11 @@ cvSelect("0.5" = cvFitLts50, "0.75" = cvFitLts75)
 }
 \author{
   Andreas Alfons
+}
+\references{
+  Hastie, T., Tibshirani, R. and Friedman, J. (2009)
+  \emph{The Elements of Statistical Learning: Data Mining,
+  Inference, and Prediction}.  Springer, 2nd edition.
 }
 \seealso{
   \code{\link{cvFit}}, \code{\link{cvTuning}}

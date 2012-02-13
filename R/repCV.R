@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Cross-validation for linear models
@@ -25,20 +25,22 @@
 #' and the estimated prediction errors from all replications as well as their 
 #' average are included in the returned object.
 #' 
-#' @rdname cvExamples
-#' @name cvExamples
+#' @aliases cvExamples
 #' 
-#' @param object  for \code{cvLm}, an object of class \code{"lm"} computed 
-#' with \code{\link[stats]{lm}}.  For \code{cvLmrob}, an object of class 
-#' \code{"lmrob"} computed with \code{\link[robustbase]{lmrob}}.  For 
-#' \code{cvLts}, an object of class \code{"lts"} computed with 
-#' \code{\link[robustbase]{ltsReg}}.
+#' @param object  an object returned from a model fitting function.  Methods 
+#' are implemented for objects of class \code{"lm"} computed with 
+#' \code{\link[stats]{lm}}, objects of class \code{"lmrob"} computed with 
+#' \code{\link[robustbase]{lmrob}}, and object of class \code{"lts"} computed 
+#' with \code{\link[robustbase]{ltsReg}}. 
 #' @param cost  a cost function measuring prediction loss.  It should expect 
 #' the observed values of the response to be passed as the first argument and 
-#' the predicted values as the second argument, and must return a non-negative 
-#' scalar value.  The default is to use the root mean squared prediction error 
-#' for \code{cvLm} and the root trimmed mean squared prediction error for 
-#' \code{cvLmrob} and \code{cvLts} (see \code{\link{cost}}).
+#' the predicted values as the second argument, and must return either a 
+#' non-negative scalar value, or a list with the first component containing 
+#' the prediction error and the second component containing the standard 
+#' error.  The default is to use the root mean squared prediction error 
+#' for the \code{"lm"} method and the root trimmed mean squared prediction 
+#' error for the \code{"lmrob"} and \code{"lts"} methods (see 
+#' \code{\link{cost}}).
 #' @param K  an integer giving the number of groups into which the data should 
 #' be split (the default is five).  Keep in mind that this should be chosen 
 #' such that all groups are of approximately equal size.  Setting \code{K} 
@@ -67,21 +69,27 @@
 #' @returnItem K  an integer giving the number of folds.
 #' @returnItem R  an integer giving the number of replications.
 #' @returnItem cv  a numeric vector containing the estimated prediction 
-#' errors.  For \code{cvLm} and \code{cvLmrob}, this is a single numeric 
-#' value.  For \code{cvLts}, this contains one value for each of the requested 
-#' fits.  In the case of repeated cross-validation, those are average values 
-#' over all replications.
+#' errors.  For the \code{"lm"} and \code{"lmrob"} methods, this is a single 
+#' numeric value.  For the \code{"lts"} method, this contains one value for 
+#' each of the requested fits.  In the case of repeated cross-validation, those 
+#' are average values over all replications.
+#' @returnItem sd  a numeric vector containing the estimated standard 
+#' errors of the prediction loss.  For the \code{"lm"} and \code{"lmrob"} 
+#' methods, this is a single numeric value.  For the \code{"lts"} method, this 
+#' contains one value for each of the requested fits.
 #' @returnItem reps  a numeric matrix containing the estimated prediction 
-#' errors from all replications.  For \code{cvLm} and \code{cvLmrob}, this is a 
-#' matrix with one column.  For \code{cvLts}, this contains one column for each 
-#' of the requested fits.  However, this is only returned for repeated 
-#' cross-validation.
+#' errors from all replications.  For the \code{"lm"} and \code{"lmrob"} 
+#' methods, this is a matrix with one column.  For the \code{"lts"} method, 
+#' this contains one column for each of the requested fits.  However, this is 
+#' only returned for repeated cross-validation.
 #' @returnItem seed  the seed of the random number generator before 
 #' cross-validation was performed.
 #' @returnItem call  the matched function call.
 #' 
-#' @note Those are simple wrapper functions that extract the data from the 
-#' fitted model and call \code{\link{cvFit}} to perform cross-validation.
+#' @note The \code{repCV} methods are simple wrapper functions that extract the 
+#' data from the fitted model and call \code{\link{cvFit}} to perform 
+#' cross-validation.  In addition, \code{cvLm}, \code{cvLmrob} and \code{cvLts} 
+#' are aliases for the respective methods.
 #' 
 #' @author Andreas Alfons
 #' 
@@ -89,19 +97,21 @@
 #' \code{\link[stats]{lm}}, \code{\link[robustbase]{lmrob}}, 
 #' \code{\link[robustbase]{ltsReg}}
 #' 
-#' @example inst/doc/examples/example-cvExamples.R
+#' @example inst/doc/examples/example-repCV.R
 #' 
 #' @keywords utilities
+#' 
+#' @export repCV
 
-NULL
+repCV <- function(object, ...) UseMethod("repCV")
 
-# ----------------------
-
-#' @rdname cvExamples
-#' @export
 
 ## LS regression 
-cvLm <- function(object, cost=rmspe, K = 5, R = 1, 
+#' @rdname repCV
+#' @method repCV lm
+#' @export
+
+repCV.lm <- function(object, cost=rmspe, K = 5, R = 1, 
         foldType = c("random", "consecutive", "interleaved"), 
         folds = NULL, seed = NULL, ...) {
     ## initializations
@@ -132,14 +142,14 @@ cvLm <- function(object, cost=rmspe, K = 5, R = 1,
     out
 }
 
-# ----------------------
-
-#' @rdname cvExamples
-#' @import robustbase
-#' @export
 
 ## MM and SDMD regression
-cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1, 
+#' @rdname repCV
+#' @method repCV lmrob
+#' @export
+#' @import robustbase
+
+repCV.lmrob <- function(object, cost=rtmspe, K = 5, R = 1, 
         foldType = c("random", "consecutive", "interleaved"), 
         folds = NULL, seed = NULL, ...) {
     ## initializations
@@ -170,14 +180,14 @@ cvLmrob <- function(object, cost=rtmspe, K = 5, R = 1,
     out
 }
 
-# ----------------------
-
-#' @rdname cvExamples
-#' @import robustbase
-#' @export
 
 ## LTS regression
-cvLts <- function(object, cost = rtmspe, K = 5, R = 1, 
+#' @rdname repCV
+#' @method repCV lts
+#' @export
+#' @import robustbase
+
+repCV.lts <- function(object, cost = rtmspe, K = 5, R = 1, 
         foldType = c("random", "consecutive", "interleaved"), 
         folds = NULL, fit = c("reweighted", "raw", "both"), 
         seed = NULL, ...) {
@@ -216,8 +226,29 @@ cvLts <- function(object, cost = rtmspe, K = 5, R = 1,
 }
 
 
+# ----------------------
+
+## LS regression
+#' @rdname repCV
+#' @export
+cvLm <- repCV.lm
+
+## MM and SDMD regression
+#' @rdname repCV
+#' @export
 #' @import robustbase
+cvLmrob <- repCV.lmrob
+
+## LTS regression
+#' @rdname repCV
+#' @export
+#' @import robustbase
+cvLts <- repCV.lts
+
+# ----------------------
+
 #' @S3method predict lts
+#' @import robustbase
 
 # there is no predict() method for "lts" objects in package 'robustbase'
 predict.lts <- function(object, newdata, 

@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Cross-validation for model evaluation
@@ -71,8 +71,10 @@
 #' fitting function.
 #' @param cost  a cost function measuring prediction loss.  It should expect 
 #' the observed values of the response to be passed as the first argument and 
-#' the predicted values as the second argument, and must return a non-negative 
-#' scalar value.  The default is to use the root mean squared prediction error 
+#' the predicted values as the second argument, and must return either a 
+#' non-negative scalar value, or a list with the first component containing 
+#' the prediction error and the second component containing the standard 
+#' error.  The default is to use the root mean squared prediction error 
 #' (see \code{\link{cost}}).
 #' @param K  an integer giving the number of groups into which the data should 
 #' be split (the default is five).  Keep in mind that this should be chosen 
@@ -106,6 +108,8 @@
 #' @returnItem cv  a numeric vector containing the respective estimated 
 #' prediction errors.  For repeated cross-validation, those are average values 
 #' over all replications.
+#' @returnItem sd  a numeric vector containing the respective estimated 
+#' standard errors of the prediction loss.
 #' @returnItem reps  a numeric matrix in which each column contains the 
 #' respective estimated prediction errors from all replications.  This is 
 #' only returned for repeated cross-validation.
@@ -220,9 +224,23 @@ cvFit.call <- function(object, data = NULL, x = NULL, y, cost = rmspe,
     if(R > 1) {
         reps <- cv
         cv <- apply(reps, 2, mean)
-    } else cv <- drop(cv)
+        sd <- apply(reps, 2, sd)
+    } else {
+        if(is.list(cv)) {
+            sd <- cv[[2]]
+            cv <- cv[[1]]
+        } else {
+            cv <- drop(cv)
+            if(is.null(names(cv))) {
+                # drop() removes column name of 1x1 matrix
+                names(cv) <- defaultCvNames(length(cv))
+            }
+            sd <- rep.int(NA, length(cv))
+            names(sd) <- names(cv)
+        }
+    }
     ## construct return object
-    out <- list(n=folds$n, K=folds$K, R=R, cv=cv)
+    out <- list(n=folds$n, K=folds$K, R=R, cv=cv, sd=sd)
     if(R > 1) out$reps <- reps
     out$seed <- seed
     out$call <- matchedCall

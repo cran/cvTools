@@ -3,8 +3,8 @@
 \alias{print.cvFolds}
 \title{Cross-validation folds}
 \usage{
- cvFolds(n, K = 5, R = 1, type = c("random", "consecutive",
-     "interleaved"))
+  cvFolds(n, K = 5, R = 1,
+    type = c("random", "consecutive", "interleaved"))
 }
 \arguments{
   \item{n}{an integer giving the number of observations to

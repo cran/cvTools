@@ -6,26 +6,28 @@
 \alias{print.cv}
 \title{Cross-validation for model evaluation}
 \usage{
- cvFit(object, ...)
+  cvFit(object, ...)
 
- \method{cvFit}{default} (object, data = NULL, x = NULL, y,
-     cost = rmspe, K = 5, R = 1, foldType = c("random",
-     "consecutive", "interleaved"), folds = NULL, names =
-     NULL, predictArgs = list(), costArgs = list(), envir =
-     parent.frame(), seed = NULL, ...)
+  \method{cvFit}{default} (object, data = NULL, x = NULL,
+    y, cost = rmspe, K = 5, R = 1,
+    foldType = c("random", "consecutive", "interleaved"),
+    folds = NULL, names = NULL, predictArgs = list(),
+    costArgs = list(), envir = parent.frame(), seed = NULL,
+    ...)
 
- \method{cvFit}{function} (object, formula, data = NULL, x
-     = NULL, y, args = list(), cost = rmspe, K = 5, R = 1,
-     foldType = c("random", "consecutive", "interleaved"),
-     folds = NULL, names = NULL, predictArgs = list(),
-     costArgs = list(), envir = parent.frame(), seed =
-     NULL, ...)
+  \method{cvFit}{function} (object, formula, data = NULL,
+    x = NULL, y, args = list(), cost = rmspe, K = 5, R = 1,
+    foldType = c("random", "consecutive", "interleaved"),
+    folds = NULL, names = NULL, predictArgs = list(),
+    costArgs = list(), envir = parent.frame(), seed = NULL,
+    ...)
 
- \method{cvFit}{call} (object, data = NULL, x = NULL, y,
-     cost = rmspe, K = 5, R = 1, foldType = c("random",
-     "consecutive", "interleaved"), folds = NULL, names =
-     NULL, predictArgs = list(), costArgs = list(), envir =
-     parent.frame(), seed = NULL, ...)
+  \method{cvFit}{call} (object, data = NULL, x = NULL, y,
+    cost = rmspe, K = 5, R = 1,
+    foldType = c("random", "consecutive", "interleaved"),
+    folds = NULL, names = NULL, predictArgs = list(),
+    costArgs = list(), envir = parent.frame(), seed = NULL,
+    ...)
 }
 \arguments{
   \item{object}{the fitted model for which to estimate the
@@ -59,9 +61,12 @@
   \item{cost}{a cost function measuring prediction loss.
   It should expect the observed values of the response to
   be passed as the first argument and the predicted values
-  as the second argument, and must return a non-negative
-  scalar value.  The default is to use the root mean
-  squared prediction error (see \code{\link{cost}}).}
+  as the second argument, and must return either a
+  non-negative scalar value, or a list with the first
+  component containing the prediction error and the second
+  component containing the standard error.  The default is
+  to use the root mean squared prediction error (see
+  \code{\link{cost}}).}
 
   \item{K}{an integer giving the number of groups into
   which the data should be split (the default is five).
@@ -118,6 +123,9 @@
   estimated prediction errors.  For repeated
   cross-validation, those are average values over all
   replications.}
+
+  \item{sd}{a numeric vector containing the respective
+  estimated standard errors of the prediction loss.}
 
   \item{reps}{a numeric matrix in which each column
   contains the respective estimated prediction errors from

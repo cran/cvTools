@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Subsetting cross-validation results
@@ -32,8 +32,8 @@
 
 subset.cv <- function(x, select = NULL, ...) {
     if(is.null(select)) return(x)
-    cv <- x$cv
-    x$cv <- cv[select]
+    x$cv <- x$cv[select]
+    x$sd <- x$sd[select]
     if(!is.null(reps <- x$reps)) x$reps <- reps[, select, drop=FALSE]
     x
 }
@@ -45,6 +45,7 @@ subset.cv <- function(x, select = NULL, ...) {
 
 subset.cvSelect <- function(x, subset = NULL, select = NULL, ...) {
     cv <- x$cv
+    sd <- x$sd
     cvNames <- cvNames(x)
     reps <- x$reps
     # extract subset of models
@@ -54,6 +55,7 @@ subset.cvSelect <- function(x, subset = NULL, select = NULL, ...) {
             x$best <- x$best[select]
             select <- c("Fit", select)  # also select column describing models
             x$cv <- cv[, select, drop=FALSE]
+            x$sd <- sd[, select, drop=FALSE]
             if(!is.null(reps)) x$reps <- reps[, select, drop=FALSE]
         }
     } else {
@@ -64,10 +66,12 @@ subset.cvSelect <- function(x, subset = NULL, select = NULL, ...) {
         # extract CV results for the models to keep
         if(is.null(select)) {
             cv <- cv[subset, , drop=FALSE]
+            sd <- sd[subset, , drop=FALSE]
         } else {
             if(!is.character(select)) select <- cvNames[select]
             select <- c("Fit", select)  # also select column describing models
             cv <- cv[subset, select, drop=FALSE]
+            sd <- sd[subset, select, drop=FALSE]
         }
         fits <- cv$Fit  # models to keep
         haveFactor <- is.factor(fits)
@@ -75,12 +79,22 @@ subset.cvSelect <- function(x, subset = NULL, select = NULL, ...) {
             # for a factor, unused levels should be dropped and 
             # remaining levels should be in the right order
             fits <- as.character(fits)
-            cv$Fit <- factor(fits, levels=fits)
+            cv$Fit <- sd$Fit <- factor(fits, levels=fits)
         }
         x$cv <- cv
+        x$sd <- sd
         # find best model among the remaining ones
+        if(is.null(x$selectBest)) x$selectBest <- "min"
+        if(is.null(x$sdFactor)) x$sdFactor <- NA
         if(ncol(cv) > 1) {
-            x$best <- sapply(cv[, -1, drop=FALSE], which.min)
+            if(x$selectBest == "min") {
+                x$best <- sapply(cv[, -1, drop=FALSE], selectMin)
+            } else {
+                x$best <- sapply(names(cv)[-1], 
+                    function(j) {
+                        selectHastie(cv[, j], sd[, j], sdFactor=x$sdFactor)
+                    })
+            }
         } else x$best <- x$best[integer()]  # this ensures empty integer vector
         # extract the CV replicates for the models to keep
         if(!is.null(reps)) {

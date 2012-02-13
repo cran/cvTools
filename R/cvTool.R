@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Low-level function for cross-validation
@@ -54,8 +54,10 @@
 #' @param y  a numeric vector or matrix containing the response.
 #' @param cost  a cost function measuring prediction loss.  It should expect 
 #' the observed values of the response to be passed as the first argument and 
-#' the predicted values as the second argument, and must return a non-negative 
-#' scalar value.  The default is to use the root mean squared prediction error 
+#' the predicted values as the second argument, and must return either a 
+#' non-negative scalar value, or a list with the first component containing 
+#' the prediction error and the second component containing the standard 
+#' error.  The default is to use the root mean squared prediction error 
 #' (see \code{\link{cost}}).
 #' @param folds  an object of class \code{"cvFolds"} giving the folds of the 
 #' data for cross-validation (as returned by \code{\link{cvFolds}}).
@@ -68,8 +70,13 @@
 #' @param envir  the \code{\link{environment}} in which to evaluate the 
 #' function call for fitting the models (see \code{\link{eval}}).
 #' 
-#' @return A numeric matrix in which each column contains the respective 
-#' estimated prediction errors from all replications.
+#' @return If only one replication is requested and the prediction loss 
+#' function \code{cost} also returns the standard error, a list is returned, 
+#' with the first component containing the estimated prediction errors and the 
+#' second component the corresponding estimated standard errors.
+#' 
+#' Otherwise the return value is a numeric matrix in which each column contains 
+#' the respective estimated prediction errors from all replications.
 #' 
 #' @author Andreas Alfons
 #' 
@@ -99,23 +106,71 @@ cvTool <- function(call, data = NULL, x = NULL, y, cost = rmspe, folds,
                 names=names, predictArgs=predictArgs, envir=envir)
         )
     }
+    R <- folds$R
     # perform repeated cross-validation
-    cv <- sapply(seq_len(folds$R), 
-        function(r) {
-            subsetList <- getSubsetList(folds, r)
-            yHat <- eval(cvExpr)  # perform cross-validation
-            # instead of collecting the results from the folds in the original 
-            # order of the observations, the response is re-ordered accordingly
-            yHat <- combineData(yHat)  # combine predictions from the folds
-            y <- dataSubset(y, unlist(subsetList))  # re-order response
-            # compute cost function for predicted values
-            if(is.null(dim(y)) && !is.null(dim(yHat))) {
-                apply(yHat, 2, 
-                    function(yHat) doCall(cost, y, yHat, args=costArgs))
-            } else doCall(cost, y, yHat, args=costArgs)
-        })
-    cv <- if(is.null(dim(cv))) as.matrix(cv) else t(cv)
-    if(is.null(colnames(cv))) colnames(cv) <- defaultCvNames(ncol(cv))
+#    cv <- lapply(seq_len(R), 
+#        function(r) {
+#            subsetList <- getSubsetList(folds, r)
+#            yHat <- eval(cvExpr)  # perform cross-validation
+#            # instead of collecting the results from the folds in the original 
+#            # order of the observations, the response is re-ordered accordingly
+#            yHat <- combineData(yHat)  # combine predictions from the folds
+#            y <- dataSubset(y, unlist(subsetList))  # re-order response
+#            # compute cost function for predicted values
+#            if(is.null(dim(y)) && !is.null(dim(yHat))) {
+#                apply(yHat, 2, 
+#                    function(yHat) doCall(cost, y, yHat, args=costArgs))
+#            } else doCall(cost, y, yHat, args=costArgs)
+#        })
+    if(R == 1) {
+        subsetList <- getSubsetList(folds)
+        yHat <- eval(cvExpr)  # perform cross-validation
+        # instead of collecting the results from the folds in the original 
+        # order of the observations, the response is re-ordered accordingly
+        yHat <- combineData(yHat)  # combine predictions from the folds
+        y <- dataSubset(y, unlist(subsetList))  # re-order response
+        # compute cost function for predicted values
+        if(is.null(dim(y)) && !is.null(dim(yHat))) {
+            cv <- apply(yHat, 2, 
+                function(yHat) doCall(cost, y, yHat, args=costArgs))
+            if(is.list(cv)) {
+                cv <- list(sapply(cv, function(x) x[[1]]), 
+                    sapply(cv, function(x) x[[2]]))
+            }
+        } else cv <- doCall(cost, y, yHat, args=costArgs)
+    } else {
+        cv <- sapply(seq_len(R), 
+            function(r) {
+                subsetList <- getSubsetList(folds, r)
+                yHat <- eval(cvExpr)  # perform cross-validation
+                # instead of collecting the results from the folds in the original 
+                # order of the observations, the response is re-ordered accordingly
+                yHat <- combineData(yHat)  # combine predictions from the folds
+                y <- dataSubset(y, unlist(subsetList))  # re-order response
+                # compute cost function for predicted values
+                if(is.null(dim(y)) && !is.null(dim(yHat))) {
+                    tmp <- apply(yHat, 2, 
+                        function(yHat) doCall(cost, y, yHat, args=costArgs))
+                    if(is.list(tmp)) tmp <- sapply(tmp, function(x) x[[1]])
+                } else {
+                    tmp <- doCall(cost, y, yHat, args=costArgs)
+                    if(is.list(tmp)) tmp <- tmp[[1]]
+                }
+                tmp
+            })
+    }
+#    cv <- if(is.null(dim(cv))) as.matrix(cv) else t(cv)
+#    if(is.null(colnames(cv))) colnames(cv) <- defaultCvNames(ncol(cv))
+    if(is.list(cv)) {
+        cv <- lapply(cv, 
+            function(x) {
+                if(is.null(names(x))) names(x) <- defaultCvNames(length(x))
+                x
+            })
+    } else {
+        cv <- if(is.null(dim(cv))) as.matrix(cv) else t(cv)
+        if(is.null(colnames(cv))) colnames(cv) <- defaultCvNames(ncol(cv))
+    }
     cv
 }
 

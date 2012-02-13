@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' X-Y plots of cross-validation results
@@ -24,7 +24,7 @@
 #' \code{type} argument (a full list of accepted values can be found in the 
 #' help file of \code{\link[lattice:panel.xyplot]{panel.xyplot}}).
 #' 
-#' @method xyplot cvSelect
+#' @method xyplot cv
 #' 
 #' @param x  an object inheriting from class \code{"cvSelect"} that contains 
 #' cross-validation results (note that this includes objects of class 
@@ -34,6 +34,9 @@
 #' of models for which to plot the cross-validation results.
 #' @param select  a character, integer or logical vector indicating the columns 
 #' of cross-validation results to be plotted.
+#' @param sdFactor  a numeric value giving the multiplication factor of the 
+#' standard error for displaying error bars.  Error bars can be suppressed by 
+#' setting this to \code{NA}.
 #' @param \dots  additional arguments to be passed to the \code{"formula"} 
 #' method of \code{\link[lattice:xyplot]{xyplot}}.
 #' 
@@ -57,31 +60,49 @@
 #' @import lattice
 #' @export
 
-xyplot.cvSelect <- function(x, data, subset = NULL, select = NULL, ...) {
+xyplot.cv <- function(x, data, select = NULL, sdFactor = NA, ...) {
     # construct data frame in lattice format and call internal function
-    CV <- getLatticeData(x, subset, select, reps=FALSE, numericAsFactor=TRUE)
-    localXyplot(CV, ...)
+    tmp <- getLatticeData(x, select, reps=FALSE, sdFactor=sdFactor)
+    localXyplot(tmp$CV, tmp$lower, tmp$upper, ...)
 }
 
 
-#' @rdname xyplot.cvSelect
+#' @rdname xyplot.cv
+#' @method xyplot cvSelect
+#' @export
+
+xyplot.cvSelect <- function(x, data, subset = NULL, select = NULL, 
+        sdFactor = x$sdFactor, ...) {
+    # construct data frame in lattice format and call internal function
+    tmp <- getLatticeData(x, subset, select, reps=FALSE, 
+        sdFactor=sdFactor, numericAsFactor=TRUE)
+    localXyplot(tmp$CV, tmp$lower, tmp$upper, ...)
+}
+
+
+#' @rdname xyplot.cv
 #' @method xyplot cvTuning
 #' @export
 
-xyplot.cvTuning <- function(x, data, subset = NULL, select = NULL, ...) {
+xyplot.cvTuning <- function(x, data, subset = NULL, select = NULL, 
+        sdFactor = x$sdFactor, ...) {
     # construct data frame in lattice format and call internal function
-    CV <- getLatticeData(x, subset, select, reps=FALSE)
-    localXyplot(CV, x$tuning, ...)
+    tmp <- getLatticeData(x, subset, select, reps=FALSE, sdFactor=sdFactor)
+    localXyplot(tmp$CV, tmp$lower, tmp$upper, x$tuning, ...)
 }
 
 
 # internal function for x-y plots
-localXyplot <- function(CV, tuning = NULL, type, xlab, ylab = "CV results", ...,
+localXyplot <- function(CV, lower, upper, tuning = NULL, type, 
+        xlab, ylab = "CV results", ...,
         # the following arguments are defined so that they aren't supplied twice
         x, formula, data, groups) {
     # construct formula for call to xyplot()
     cvNames <- names(CV)
-    if(!("Fit" %in% cvNames)) CV$Fit <- rep.int(NA, nrow(CV))
+#    if(!("Fit" %in% cvNames)) CV$Fit <- rep.int(NA, nrow(CV))
+    if(!("Fit" %in% cvNames)) {
+        CV$Fit <- factor(rep.int(defaultFitNames(1), nrow(CV)))
+    }
     conditional <- if("Name" %in% cvNames) "Name" else NULL
     f <- getFormula("CV", "Fit", conditional)
     # default plot type x-axis label
@@ -89,9 +110,41 @@ localXyplot <- function(CV, tuning = NULL, type, xlab, ylab = "CV results", ...,
         if(missing(type)) type <- "b"
         if(missing(xlab)) xlab <- names(tuning)
     } else {
-        if(missing(type)) type <- "h"
+        if(missing(type)) type <- c("h", "p")
         if(missing(xlab)) xlab <- NULL
     }
     # call xyplot()
-    xyplot(f, data=CV, type=type, xlab=xlab, ylab=ylab, ...)
+    xyplot(f, data=CV, lower=lower, upper=upper, prepanel=prepanelXyplot, 
+        panel=panelXyplot, type=type, xlab=xlab, ylab=ylab, ...)
+}
+
+# prepanel function
+prepanelXyplot <- function(x, y, lower, upper, subscripts, ...) {
+    tmp <- c(lower[subscripts], y, upper[subscripts])
+    tmp <- tmp[is.finite(tmp)]
+    if(length(tmp) > 0) {
+        lim <- range(tmp, finite=TRUE)
+        list(ylim=lim)
+    } else list()
+}
+
+# panel function
+panelXyplot <- function(x, y, lower, upper, subscripts, 
+        col = plot.line$col, angle=90, length=0.5, 
+        unit="lines", ends, type, lty, lwd, ...) {
+    # initializations
+    plot.line <- trellis.par.get("plot.line")
+    box.umbrella <- trellis.par.get("box.umbrella")
+    if(missing(lty) || length(lty) == 0) {
+        lty <- c(plot.line$lty, box.umbrella$lty)
+    } else if(length(lty == 1)) lty = c(lty, box.umbrella$lty)
+    if(missing(lwd) || length(lwd) == 0) {
+        lwd <- c(plot.line$lwd, box.umbrella$lwd)
+    } else if(length(lwd == 1)) lwd = c(lwd, box.umbrella$lwd)
+    # create plot
+    panel.xyplot(x, y, subscripts=subscripts, type=type, col=col, 
+        lty=lty[1], lwd=lwd[1], ...)
+    panel.arrows(x, lower[subscripts], x, upper[subscripts], 
+        angle=angle, length=length, unit=unit, ends="both", 
+        col=col, lty=lty[2], lwd=lwd[2], ...)
 }

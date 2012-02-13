@@ -1,6 +1,6 @@
 # ----------------------
 # Author: Andreas Alfons
-#         K.U.Leuven
+#         KU Leuven
 # ----------------------
 
 #' Box-and-whisker plots of cross-validation results
@@ -46,7 +46,7 @@
 
 bwplot.cv <- function(x, data, select = NULL, ...) {
     # initializations
-    if(x$R == 1) stop("density plot is only meaningful for repeated CV")
+    if(x$R == 1) stop("box plot is only meaningful for repeated CV")
     # construct data frame in lattice format and call internal function
     CV <- getLatticeData(x, select)
     localBwplot(CV, ...)
