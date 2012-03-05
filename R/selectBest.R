@@ -12,7 +12,7 @@
 # \code{selectHastie} is useful for nested models or for models where a 
 # tuning parameter controls the complexity of the model (e.g., penalized 
 # regression).  It selects the most parsimonious model whose prediction error 
-# is no larger than \code{sdFactor} standard errors above the prediction error 
+# is no larger than \code{seFactor} standard errors above the prediction error 
 # of the best model.  In particular a one-standard-error rule is frequently 
 # applied.
 # 
@@ -21,9 +21,9 @@
 # 
 # @param x  a numeric vector containing the estimated prediction errors for 
 # the models.
-# @param sd  a numeric vector containing the estimated standard errors of the 
+# @param se  a numeric vector containing the estimated standard errors of the 
 # prediction loss for the models.
-# @param sdFactor  a numeric value giving the multiplication factor of the 
+# @param seFactor  a numeric value giving the multiplication factor of the 
 # standard error.
 # 
 # @return An integer giving the index of the best model.
@@ -50,24 +50,24 @@ selectMin <- function(x) which.min(x)
 
 # @rdname selectBest
 # @export
-selectHastie <- function(x, sd, sdFactor = 1) {
+selectHastie <- function(x, se, seFactor = 1) {
     i <- which.min(x)
-    within <- which(x[seq_len(i)] < (x[i] + sdFactor * sd[i]))
-    if(length(within) == 0) i else within[1]  # ensure it works if sd[i] is NA
+    within <- which(x[seq_len(i)] < (x[i] + seFactor * se[i]))
+    if(length(within) == 0) i else within[1]  # ensure it works if se[i] is NA
 }
 
-#selectDiff <- function(x, sd, sdFactor = 1) {
+#selectDiff <- function(x, se, seFactor = 1) {
 #    i <- which.min(x)
 #    seqI <- seq_len(i)
-#    out <- which(c(TRUE, (diff(x[seqI]) + sdFactor * sd[seqI[-1]]) < 0))
+#    out <- which(c(TRUE, (diff(x[seqI]) + seFactor * se[seqI[-1]]) < 0))
 #    tail(out, 1)
 #}
 #
-#selectRelChange <- function(x, sd, sdFactor = 1, threshold = 0.001) {
+#selectRelChange <- function(x, se, seFactor = 1, threshold = 0.001) {
 #    # find models with large enough relative change
 #    i <- which.min(x)
 #    xSeqI <- x[seq_len(i)]
 #    keep <- which((xSeqI - x[i]) / max(xSeqI) > threshold)
 #    # call selectHastie() for the remaining models
-#    selectHastie(xSeqI[keep], sd[keep], sdFactor=sdFactor)
+#    selectHastie(xSeqI[keep], se[keep], seFactor=seFactor)
 #}

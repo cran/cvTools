@@ -111,7 +111,7 @@
   cross-validation, those are average values over all
   replications.}
 
-  \item{sd}{a numeric vector containing the estimated
+  \item{se}{a numeric vector containing the estimated
   standard errors of the prediction loss.  For the
   \code{"lm"} and \code{"lmrob"} methods, this is a single
   numeric value.  For the \code{"lts"} method, this

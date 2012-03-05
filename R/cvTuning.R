@@ -103,11 +103,11 @@
 #' error.  The latter is useful for models with a tuning parameter controlling 
 #' the complexity of the model (e.g., penalized regression).  It selects the 
 #' most parsimonious model whose prediction error is no larger than 
-#' \code{sdFactor} standard errors above the prediction error of the best 
+#' \code{seFactor} standard errors above the prediction error of the best 
 #' overall model.  Note that the models are thereby assumed to be ordered 
 #' from the most parsimonious one to the most complex one.  In particular 
 #' a one-standard-error rule is frequently applied.
-#' @param sdFactor  a numeric value giving a multiplication factor of the 
+#' @param seFactor  a numeric value giving a multiplication factor of the 
 #' standard error for the selection of the best model.  This is ignored if 
 #' \code{selectBest} is \code{"min"}.
 #' @param envir  the \code{\link{environment}} in which to evaluate the 
@@ -132,11 +132,11 @@
 #' @returnItem cv  a data frame containing the estimated prediction errors for 
 #' all combinations of tuning parameter values.  For repeated cross-validation, 
 #' those are average values over all replications.
-#' @returnItem sd  a data frame containing the estimated standard errors of the 
+#' @returnItem se  a data frame containing the estimated standard errors of the 
 #' prediction loss for all combinations of tuning parameter values.
 #' @returnItem selectBest  a character string specifying the criterion used for 
 #' selecting the best model.
-#' @returnItem sdFactor  a numeric value giving the multiplication factor of 
+#' @returnItem seFactor  a numeric value giving the multiplication factor of 
 #' the standard error used for the selection of the best model.
 #' @returnItem reps  a data frame containing the estimated prediction errors 
 #' from all replications for all combinations of tuning parameter values.  This 
@@ -175,7 +175,7 @@ cvTuning.function <- function(object, formula, data = NULL, x = NULL, y,
         tuning = list(), args = list(), cost = rmspe, K = 5, R = 1, 
         foldType = c("random", "consecutive", "interleaved"), folds = NULL, 
         names = NULL, predictArgs = list(), costArgs = list(), 
-        selectBest = c("min", "hastie"), sdFactor = 1, 
+        selectBest = c("min", "hastie"), seFactor = 1, 
         envir = parent.frame(), seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
@@ -199,7 +199,7 @@ cvTuning.function <- function(object, formula, data = NULL, x = NULL, y,
     out <- cvTuning(call, data=data, x=x, y=y, tuning=tuning, cost=cost, 
         K=K, R=R, foldType=foldType, folds=folds, names=names, 
         predictArgs=predictArgs, costArgs=costArgs, selectBest=selectBest, 
-        sdFactor=sdFactor, envir=envir, seed=seed)
+        seFactor=seFactor, envir=envir, seed=seed)
     out$call <- matchedCall
     out
 }
@@ -214,7 +214,7 @@ cvTuning.call <- function(object, data = NULL, x = NULL, y,
         foldType = c("random", "consecutive", "interleaved"), 
         folds = NULL, names = NULL, predictArgs = list(), 
         costArgs = list(), selectBest = c("min", "hastie"), 
-        sdFactor = 1, envir = parent.frame(), seed = NULL, ...) {
+        seFactor = 1, envir = parent.frame(), seed = NULL, ...) {
     ## initializations
     matchedCall <- match.call()
     matchedCall[[1]] <- as.name("cvTuning")
@@ -270,36 +270,36 @@ cvTuning.call <- function(object, data = NULL, x = NULL, y,
     if(R == 1) {
         haveList <- is.list(cv[[1]])
         if(haveList) {
-            sd <- lapply(cv, function(x) x[[2]])
+            se <- lapply(cv, function(x) x[[2]])
             cv <- lapply(cv, function(x) x[[1]])
         }
     }
     cv <- do.call("rbind", cv)
     if(R == 1) {
         if(haveList) {
-            sd <- do.call("rbind", sd)
-        } else sd <- matrix(NA, nrow(cv), ncol(cv), dimnames=dimnames(cv))
-        sd <- data.frame(Fit=seq_len(nTuning), sd, row.names=NULL)
+            se <- do.call("rbind", se)
+        } else se <- matrix(NA, nrow(cv), ncol(cv), dimnames=dimnames(cv))
+        se <- data.frame(Fit=seq_len(nTuning), se, row.names=NULL)
     }
     cv <- data.frame(Fit=rep(seq_len(nTuning), each=R), cv, row.names=NULL)
     ## compute average results in case of repeated CV
     if(R > 1) {
         reps <- cv
         cv <- aggregate(reps[, -1, drop=FALSE], reps[, 1, drop=FALSE], mean)
-        sd <- aggregate(reps[, -1, drop=FALSE], reps[, 1, drop=FALSE], sd)
+        se <- aggregate(reps[, -1, drop=FALSE], reps[, 1, drop=FALSE], sd)
     }
     ## find optimal values of tuning parameters
     if(selectBest == "min") {
-        sdFactor <- NA
+        seFactor <- NA
         best <- sapply(cv[, -1, drop=FALSE], selectMin)
     } else {
-        sdFactor <- rep(sdFactor, length.out=1)
+        seFactor <- rep(seFactor, length.out=1)
         best <- sapply(names(cv)[-1], 
-            function(j) selectHastie(cv[, j], sd[, j], sdFactor=sdFactor))
+            function(j) selectHastie(cv[, j], se[, j], seFactor=seFactor))
     }
     ## construct return object
     out <- list(n=folds$n, K=folds$K, R=R, tuning=tuning, best=best, 
-        cv=cv, sd=sd, selectBest=selectBest, sdFactor=sdFactor)
+        cv=cv, se=se, selectBest=selectBest, seFactor=seFactor)
     if(R > 1) out$reps <- reps
     out$seed <- seed
     out$call <- matchedCall

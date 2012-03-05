@@ -63,7 +63,7 @@ cvNames.cvSelect <- function(x) names(x$cv)[-1]
 #' @S3method cvNames<- cv
 "cvNames<-.cv" <- function(x, value) {
     object <- x
-    names(object$cv) <- names(object$sd) <- value
+    names(object$cv) <- names(object$se) <- value
     if(!is.null(x$reps)) colnames(object$reps) <- value
     eval.parent(substitute(x <- object))
 }
@@ -73,7 +73,7 @@ cvNames.cvSelect <- function(x) names(x$cv)[-1]
     object <- x
     names(object$best) <- value
     value <- c("Fit", value)
-    names(object$cv) <- names(object$sd) <- value
+    names(object$cv) <- names(object$se) <- value
     if(!is.null(x$reps)) names(object$reps) <- value
     eval.parent(substitute(x <- object))
 }
@@ -104,7 +104,7 @@ fits.cvSelect <- function(x) x$cv$Fit
 "fits<-.cvSelect" <- function(x, value) {
     object <- x
     if(is.factor(value)) value <- factor(as.character(value), levels=value)
-    object$cv$Fit <- object$sd$Fit <- value
+    object$cv$Fit <- object$se$Fit <- value
     if(!is.null(reps <- x$reps)) {
         indices <- match(reps$Fit, x$cv$Fit, nomatch=0)
         object$reps$Fit <- value[indices]

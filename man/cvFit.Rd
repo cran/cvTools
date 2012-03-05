@@ -124,7 +124,7 @@
   cross-validation, those are average values over all
   replications.}
 
-  \item{sd}{a numeric vector containing the respective
+  \item{se}{a numeric vector containing the respective
   estimated standard errors of the prediction loss.}
 
   \item{reps}{a numeric matrix in which each column

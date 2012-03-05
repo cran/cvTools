@@ -1,3 +1,9 @@
+Changes in cvTools version 0.3.0
+
+    + Changed some argument and component names regarding standard errors.
+
+
+
 Changes in cvTools version 0.2.0
 
     + New generic function repCV() for (repeated) K-fold cross-validation.  The 

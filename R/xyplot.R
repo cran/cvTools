@@ -34,7 +34,7 @@
 #' of models for which to plot the cross-validation results.
 #' @param select  a character, integer or logical vector indicating the columns 
 #' of cross-validation results to be plotted.
-#' @param sdFactor  a numeric value giving the multiplication factor of the 
+#' @param seFactor  a numeric value giving the multiplication factor of the 
 #' standard error for displaying error bars.  Error bars can be suppressed by 
 #' setting this to \code{NA}.
 #' @param \dots  additional arguments to be passed to the \code{"formula"} 
@@ -60,9 +60,9 @@
 #' @import lattice
 #' @export
 
-xyplot.cv <- function(x, data, select = NULL, sdFactor = NA, ...) {
+xyplot.cv <- function(x, data, select = NULL, seFactor = NA, ...) {
     # construct data frame in lattice format and call internal function
-    tmp <- getLatticeData(x, select, reps=FALSE, sdFactor=sdFactor)
+    tmp <- getLatticeData(x, select, reps=FALSE, seFactor=seFactor)
     localXyplot(tmp$CV, tmp$lower, tmp$upper, ...)
 }
 
@@ -72,10 +72,10 @@ xyplot.cv <- function(x, data, select = NULL, sdFactor = NA, ...) {
 #' @export
 
 xyplot.cvSelect <- function(x, data, subset = NULL, select = NULL, 
-        sdFactor = x$sdFactor, ...) {
+        seFactor = x$seFactor, ...) {
     # construct data frame in lattice format and call internal function
     tmp <- getLatticeData(x, subset, select, reps=FALSE, 
-        sdFactor=sdFactor, numericAsFactor=TRUE)
+        seFactor=seFactor, numericAsFactor=TRUE)
     localXyplot(tmp$CV, tmp$lower, tmp$upper, ...)
 }
 
@@ -85,9 +85,9 @@ xyplot.cvSelect <- function(x, data, subset = NULL, select = NULL,
 #' @export
 
 xyplot.cvTuning <- function(x, data, subset = NULL, select = NULL, 
-        sdFactor = x$sdFactor, ...) {
+        seFactor = x$seFactor, ...) {
     # construct data frame in lattice format and call internal function
-    tmp <- getLatticeData(x, subset, select, reps=FALSE, sdFactor=sdFactor)
+    tmp <- getLatticeData(x, subset, select, reps=FALSE, seFactor=seFactor)
     localXyplot(tmp$CV, tmp$lower, tmp$upper, x$tuning, ...)
 }
 

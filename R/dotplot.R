@@ -20,7 +20,7 @@
 #' of models for which to plot the cross-validation results.
 #' @param select  a character, integer or logical vector indicating the columns 
 #' of cross-validation results to be plotted.
-#' @param sdFactor  a numeric value giving the multiplication factor of the 
+#' @param seFactor  a numeric value giving the multiplication factor of the 
 #' standard error for displaying error bars.  Error bars can be suppressed by 
 #' setting this to \code{NA}.
 #' @param \dots  additional arguments to be passed to the \code{"formula"} 
@@ -46,9 +46,9 @@
 #' @import lattice
 #' @export
 
-dotplot.cv <- function(x, data, select = NULL, sdFactor = NA, ...) {
+dotplot.cv <- function(x, data, select = NULL, seFactor = NA, ...) {
     # construct data frame in lattice format and call internal function
-    tmp <- getLatticeData(x, select, reps=FALSE, sdFactor=sdFactor)
+    tmp <- getLatticeData(x, select, reps=FALSE, seFactor=seFactor)
     localDotplot(tmp$CV, tmp$lower, tmp$upper, ...)
 }
 
@@ -58,10 +58,10 @@ dotplot.cv <- function(x, data, select = NULL, sdFactor = NA, ...) {
 #' @export
 
 dotplot.cvSelect <- function(x, data, subset = NULL, select = NULL, 
-        sdFactor = x$sdFactor, ...) {
+        seFactor = x$seFactor, ...) {
     # construct data frame in lattice format and call internal function
     tmp <- getLatticeData(x, subset, select, reps=FALSE, 
-        sdFactor=sdFactor, numericAsFactor=TRUE)
+        seFactor=seFactor, numericAsFactor=TRUE)
     localDotplot(tmp$CV, tmp$lower, tmp$upper, ...)
 }
 

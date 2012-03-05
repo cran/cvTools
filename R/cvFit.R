@@ -108,7 +108,7 @@
 #' @returnItem cv  a numeric vector containing the respective estimated 
 #' prediction errors.  For repeated cross-validation, those are average values 
 #' over all replications.
-#' @returnItem sd  a numeric vector containing the respective estimated 
+#' @returnItem se  a numeric vector containing the respective estimated 
 #' standard errors of the prediction loss.
 #' @returnItem reps  a numeric matrix in which each column contains the 
 #' respective estimated prediction errors from all replications.  This is 
@@ -224,10 +224,10 @@ cvFit.call <- function(object, data = NULL, x = NULL, y, cost = rmspe,
     if(R > 1) {
         reps <- cv
         cv <- apply(reps, 2, mean)
-        sd <- apply(reps, 2, sd)
+        se <- apply(reps, 2, sd)
     } else {
         if(is.list(cv)) {
-            sd <- cv[[2]]
+            se <- cv[[2]]
             cv <- cv[[1]]
         } else {
             cv <- drop(cv)
@@ -235,12 +235,12 @@ cvFit.call <- function(object, data = NULL, x = NULL, y, cost = rmspe,
                 # drop() removes column name of 1x1 matrix
                 names(cv) <- defaultCvNames(length(cv))
             }
-            sd <- rep.int(NA, length(cv))
-            names(sd) <- names(cv)
+            se <- rep.int(NA, length(cv))
+            names(se) <- names(cv)
         }
     }
     ## construct return object
-    out <- list(n=folds$n, K=folds$K, R=R, cv=cv, sd=sd)
+    out <- list(n=folds$n, K=folds$K, R=R, cv=cv, se=se)
     if(R > 1) out$reps <- reps
     out$seed <- seed
     out$call <- matchedCall

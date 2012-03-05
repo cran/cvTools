@@ -27,7 +27,7 @@
 #' column.  Then the best overall model is selected.
 #' 
 #' It should also be noted that the argument names of \code{.reshape}, 
-#' \code{.selectBest} and \code{.sdFacor} start with a dot to avoid conflicts 
+#' \code{.selectBest} and \code{.seFacor} start with a dot to avoid conflicts 
 #' with the argument names used for the objects containing cross-validation 
 #' results.
 #' 
@@ -42,11 +42,11 @@
 #' error.  The latter is useful for nested models or for models with a tuning 
 #' parameter controlling the complexity of the model (e.g., penalized 
 #' regression).  It selects the most parsimonious model whose prediction error 
-#' is no larger than \code{.sdFactor} standard errors above the prediction error 
+#' is no larger than \code{.seFactor} standard errors above the prediction error 
 #' of the best overall model.  Note that the models are thereby assumed to be 
 #' ordered from the most parsimonious one to the most complex one.  In 
 #' particular a one-standard-error rule is frequently applied.
-#' @param .sdFactor  a numeric value giving a multiplication factor of the 
+#' @param .seFactor  a numeric value giving a multiplication factor of the 
 #' standard error for the selection of the best model.  This is ignored if 
 #' \code{.selectBest} is \code{"min"}.
 #' 
@@ -63,11 +63,11 @@
 #' @returnItem cv  a data frame containing the estimated prediction errors for 
 #' the models.  For models for which repeated cross-validation was performed, 
 #' those are average values over all replications.
-#' @returnItem sd  a data frame containing the estimated standard errors of the 
+#' @returnItem se  a data frame containing the estimated standard errors of the 
 #' prediction loss for the models.
 #' @returnItem selectBest  a character string specifying the criterion used for 
 #' selecting the best model.
-#' @returnItem sdFactor  a numeric value giving the multiplication factor of 
+#' @returnItem seFactor  a numeric value giving the multiplication factor of 
 #' the standard error used for the selection of the best model.
 #' @returnItem reps  a data frame containing the estimated prediction errors 
 #' from all replications for those models for which repeated cross-validation 
@@ -96,7 +96,7 @@
 #' @export
 
 cvSelect <- function(..., .reshape = FALSE, .selectBest = c("min", "hastie"), 
-        .sdFactor = 1) {
+        .seFactor = 1) {
     ## initializations
     objects <- list(...)
     m <- length(objects)
@@ -144,7 +144,7 @@ cvSelect <- function(..., .reshape = FALSE, .selectBest = c("min", "hastie"),
                 x$R <- rep(x$R, length.out=m)
                 # remove column specifying fit from results
                 x$cv <- x$cv[, -1, drop=FALSE]
-                x$sd <- x$sd[, -1, drop=FALSE]
+                x$se <- x$se[, -1, drop=FALSE]
                 if(!is.null(x$reps)) x$reps <- x$reps[, -1, drop=FALSE]
                 x
             })
@@ -163,10 +163,10 @@ cvSelect <- function(..., .reshape = FALSE, .selectBest = c("min", "hastie"),
             cv <- x$cv                                     # extract CV results
             if(is.null(dim(cv))) t(cv) else as.matrix(cv)  # return matrix
         })
-    sd <- lapply(objects, 
+    se <- lapply(objects, 
         function(x) {
-            sd <- x$sd                                     # extract standard errors
-            if(is.null(dim(sd))) t(sd) else as.matrix(sd)  # return matrix
+            se <- x$se                                     # extract standard errors
+            if(is.null(dim(se))) t(se) else as.matrix(se)  # return matrix
         })
     if(m > 1) {
         # check if names are the same for all objects
@@ -176,12 +176,12 @@ cvSelect <- function(..., .reshape = FALSE, .selectBest = c("min", "hastie"),
         if(adjustNames) cvNames <- defaultCvNames(length(cvNames))
     }
     cv <- do.call("rbind", cv)
-    sd <- do.call("rbind", sd)
+    se <- do.call("rbind", se)
     if(m > 1 && adjustNames) {
-        colnames(cv) <- colnames(sd) <- cvNames
+        colnames(cv) <- colnames(se) <- cvNames
     }
     cv <- data.frame(Fit=factor(fits, levels=fits), cv, row.names=NULL)
-    sd <- data.frame(Fit=factor(fits, levels=fits), sd, row.names=NULL)
+    se <- data.frame(Fit=factor(fits, levels=fits), se, row.names=NULL)
     ## combine repeated CV results
     haveReps <- any(i <- sapply(objects, function(x) !is.null(x$reps)))
     if(haveReps) {
@@ -195,16 +195,16 @@ cvSelect <- function(..., .reshape = FALSE, .selectBest = c("min", "hastie"),
     }
     ## find best model
     if(.selectBest == "min") {
-        .sdFactor <- NA
+        .seFactor <- NA
         best <- sapply(cv[, -1, drop=FALSE], selectMin)
     } else {
-        .sdFactor <- rep(.sdFactor, length.out=1)
+        .seFactor <- rep(.seFactor, length.out=1)
         best <- sapply(names(cv)[-1], 
-            function(j) selectHastie(cv[, j], sd[, j], sdFactor=.sdFactor))
+            function(j) selectHastie(cv[, j], se[, j], seFactor=.seFactor))
     }
     ## construct return object
-    out <- list(n=n, K=K, R=R, best=best, cv=cv, sd=sd, 
-        selectBest=.selectBest, sdFactor=.sdFactor)
+    out <- list(n=n, K=K, R=R, best=best, cv=cv, se=se, 
+        selectBest=.selectBest, seFactor=.seFactor)
     if(haveReps) out$reps <- reps
     class(out) <- "cvSelect"
     out

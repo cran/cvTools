@@ -73,7 +73,7 @@
 #' numeric value.  For the \code{"lts"} method, this contains one value for 
 #' each of the requested fits.  In the case of repeated cross-validation, those 
 #' are average values over all replications.
-#' @returnItem sd  a numeric vector containing the estimated standard 
+#' @returnItem se  a numeric vector containing the estimated standard 
 #' errors of the prediction loss.  For the \code{"lm"} and \code{"lmrob"} 
 #' methods, this is a single numeric value.  For the \code{"lts"} method, this 
 #' contains one value for each of the requested fits.

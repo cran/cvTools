@@ -13,14 +13,14 @@
     foldType = c("random", "consecutive", "interleaved"),
     folds = NULL, names = NULL, predictArgs = list(),
     costArgs = list(), selectBest = c("min", "hastie"),
-    sdFactor = 1, envir = parent.frame(), seed = NULL, ...)
+    seFactor = 1, envir = parent.frame(), seed = NULL, ...)
 
   \method{cvTuning}{call} (object, data = NULL, x = NULL,
     y, tuning = list(), cost = rmspe, K = 5, R = 1,
     foldType = c("random", "consecutive", "interleaved"),
     folds = NULL, names = NULL, predictArgs = list(),
     costArgs = list(), selectBest = c("min", "hastie"),
-    sdFactor = 1, envir = parent.frame(), seed = NULL, ...)
+    seFactor = 1, envir = parent.frame(), seed = NULL, ...)
 }
 \arguments{
   \item{object}{a function or an unevaluated function call
@@ -104,13 +104,13 @@
   parameter controlling the complexity of the model (e.g.,
   penalized regression).  It selects the most parsimonious
   model whose prediction error is no larger than
-  \code{sdFactor} standard errors above the prediction
+  \code{seFactor} standard errors above the prediction
   error of the best overall model.  Note that the models
   are thereby assumed to be ordered from the most
   parsimonious one to the most complex one.  In particular
   a one-standard-error rule is frequently applied.}
 
-  \item{sdFactor}{a numeric value giving a multiplication
+  \item{seFactor}{a numeric value giving a multiplication
   factor of the standard error for the selection of the
   best model.  This is ignored if \code{selectBest} is
   \code{"min"}.}
@@ -150,14 +150,14 @@
   parameter values.  For repeated cross-validation, those
   are average values over all replications.}
 
-  \item{sd}{a data frame containing the estimated standard
+  \item{se}{a data frame containing the estimated standard
   errors of the prediction loss for all combinations of
   tuning parameter values.}
 
   \item{selectBest}{a character string specifying the
   criterion used for selecting the best model.}
 
-  \item{sdFactor}{a numeric value giving the multiplication
+  \item{seFactor}{a numeric value giving the multiplication
   factor of the standard error used for the selection of
   the best model.}
 

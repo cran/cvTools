@@ -18,7 +18,7 @@
 #' squared prediction error.  A proportion of the largest squared differences 
 #' of the observed and fitted values are thereby trimmed.
 #' 
-#' Standard errors can be requested via the \code{sd} argument.  Note that 
+#' Standard errors can be requested via the \code{includeSE} argument.  Note that 
 #' standard errors for \code{tmspe} are based on a winsorized standard 
 #' deviation.  Furthermore, standard errors for \code{rmspe} and \code{rtmspe} 
 #' are computed from the respective standard errors of \code{mspe} and 
@@ -32,7 +32,7 @@
 #' giving the fitted values.
 #' @param trim  a numeric value giving the trimming proportion (the default is 
 #' 0.25).
-#' @param sd  a logical indicating whether standard errors should be computed 
+#' @param includeSE  a logical indicating whether standard errors should be computed 
 #' as well.
 #' 
 #' @return If standard errors are not requested, a numeric value giving the 
@@ -69,11 +69,11 @@
 #' rtmspe(coleman$Y, predict(fit), trim = 0.1)
 #' 
 #' # include standard error
-#' mspe(coleman$Y, predict(fit), sd = TRUE)
-#' rmspe(coleman$Y, predict(fit), sd = TRUE)
-#' mape(coleman$Y, predict(fit), sd = TRUE)
-#' tmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
-#' rtmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
+#' mspe(coleman$Y, predict(fit), includeSE = TRUE)
+#' rmspe(coleman$Y, predict(fit), includeSE = TRUE)
+#' mape(coleman$Y, predict(fit), includeSE = TRUE)
+#' tmspe(coleman$Y, predict(fit), trim = 0.1, includeSE = TRUE)
+#' rtmspe(coleman$Y, predict(fit), trim = 0.1, includeSE = TRUE)
 #' 
 #' @keywords utilities
 
@@ -82,14 +82,14 @@ NULL
 ## mean squared prediction error
 #' @rdname cost
 #' @export
-mspe <- function(y, yHat, sd = FALSE) {
+mspe <- function(y, yHat, includeSE = FALSE) {
     residuals2 <- (y - yHat)^2  # squared residuals
     if(!is.null(dim(y))) {
         residuals2 <- rowSums(residuals2)  # squared norm in multivariate case
     }
     res <- mean(residuals2)
-    if(isTRUE(sd)) {
-        res <- list(mspe=res, sd=sd(residuals2)/sqrt(nobs(residuals2)))
+    if(isTRUE(includeSE)) {
+        res <- list(mspe=res, se=sd(residuals2)/sqrt(nobs(residuals2)))
     }
     res
 }
@@ -97,11 +97,12 @@ mspe <- function(y, yHat, sd = FALSE) {
 ## root mean squared prediction error
 #' @rdname cost
 #' @export
-rmspe <- function(y, yHat, sd = FALSE) {
-    res <- mspe(y, yHat, sd=sd)
-    if(isTRUE(sd)) {
+rmspe <- function(y, yHat, includeSE = FALSE) {
+    includeSE <- isTRUE(includeSE)
+    res <- mspe(y, yHat, includeSE=includeSE)
+    if(includeSE) {
         rmspe <- sqrt(res$mspe)
-        res <- list(rmspe=rmspe, sd=res$sd/(2*rmspe))
+        res <- list(rmspe=rmspe, se=res$se/(2*rmspe))
     } else res <- sqrt(res)
     res
 }
@@ -109,14 +110,14 @@ rmspe <- function(y, yHat, sd = FALSE) {
 ## mean absolute prediction error
 #' @rdname cost
 #' @export
-mape <- function(y, yHat, sd = FALSE) {
+mape <- function(y, yHat, includeSE = FALSE) {
     absResiduals <- abs(y - yHat)  # absolue residuals
     if(!is.null(dim(y))) {
         absResiduals <- rowSums(absResiduals)  # norm in multivariate case
     }
     res <- mean(absResiduals)
-    if(isTRUE(sd)) {
-        res <- list(mape=res, sd=sd(absResiduals)/sqrt(nobs(absResiduals)))
+    if(isTRUE(includeSE)) {
+        res <- list(mape=res, se=sd(absResiduals)/sqrt(nobs(absResiduals)))
     }
     res
 }
@@ -124,7 +125,7 @@ mape <- function(y, yHat, sd = FALSE) {
 ## trimmed mean squared prediction error
 #' @rdname cost
 #' @export
-tmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
+tmspe <- function(y, yHat, trim = 0.25, includeSE = FALSE) {
     n <- nobs(y)
     h <- n - floor(n*trim)
     residuals2 <- (y - yHat)^2  # squared residuals
@@ -133,7 +134,7 @@ tmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
     }
     residuals2 <- sort(residuals2)       # sort squared residuals
     res <- mean(residuals2[seq_len(h)])  # mean over h smallest values
-    if(isTRUE(sd)) {
+    if(isTRUE(includeSE)) {
         # standard error of the trimmed mean is based on a winsorized 
         # standard deviation
         alpha <- 1 - trim
@@ -141,7 +142,7 @@ tmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
             q <- quantile(residuals2, alpha)  # quantile for winsorization
             residuals2[(h+1):n] <- q          # replace tail with quantile
         }
-        res <- list(tmspe=res, sd=sd(residuals2)/(alpha*sqrt(n)))
+        res <- list(tmspe=res, se=sd(residuals2)/(alpha*sqrt(n)))
     }
     res
 }
@@ -149,11 +150,12 @@ tmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
 ## root trimmed mean squared prediction error
 #' @rdname cost
 #' @export
-rtmspe <- function(y, yHat, trim = 0.25, sd = FALSE) {
-    res <- tmspe(y, yHat, trim=trim, sd=sd)
-    if(isTRUE(sd)) {
+rtmspe <- function(y, yHat, trim = 0.25, includeSE = FALSE) {
+    includeSE <- isTRUE(includeSE)
+    res <- tmspe(y, yHat, trim=trim, includeSE=includeSE)
+    if(includeSE) {
         rtmspe <- sqrt(res$tmspe)
-        res <- list(rtmspe=rtmspe, sd=res$sd/(2*rtmspe))
+        res <- list(rtmspe=rtmspe, se=res$se/(2*rtmspe))
     } else res <- sqrt(res)
     res
 }

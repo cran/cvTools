@@ -4,10 +4,10 @@
 \title{Dot plots of cross-validation results}
 \usage{
   \method{dotplot}{cv} (x, data, select = NULL,
-    sdFactor = NA, ...)
+    seFactor = NA, ...)
 
   \method{dotplot}{cvSelect} (x, data, subset = NULL,
-    select = NULL, sdFactor = x$sdFactor, ...)
+    select = NULL, seFactor = x$seFactor, ...)
 }
 \arguments{
   \item{x}{an object inheriting from class
@@ -24,7 +24,7 @@
   indicating the columns of cross-validation results to be
   plotted.}
 
-  \item{sdFactor}{a numeric value giving the multiplication
+  \item{seFactor}{a numeric value giving the multiplication
   factor of the standard error for displaying error bars.
   Error bars can be suppressed by setting this to
   \code{NA}.}

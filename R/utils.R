@@ -45,47 +45,47 @@ doCall <- function(fun, ..., args) {
     } else do.call(fun, c(list(...), args))
 }
 
-## call the supplied function for selecting the respective best model and 
-## modify the multiplication factor of the standard error as necessary
-findBest <- function(fun, x, sd, sdFactor = NULL, returnSdFactor = TRUE) {
-    formalArgs <- formals(fun)
-    argNames <- names(formalArgs)
-    if(length(argNames) == 1) {
-        # only one argument for the prediction errors, call the supplied 
-        # function directly
-        best <- sapply(x[, -1, drop=FALSE], fun)
-        sdFactor <- NA
-    } else {
-        # more than one argument: first should expect the prediction errors and 
-        # second the corresponding standard errors
-        if("sdFactor" %in% argNames) {
-            # function contains argument for the multiplication factor of the 
-            # standard error
-            # if this is not is supplied, store the default value of the
-            # supplied function
-            # otherwise include the supplied value as extra argument in a list
-            # (this way it can easily be extended to take additional arguments)
-            if(is.null(sdFactor)) {
-                sdFactor <- formalArgs$sdFactor
-                args <- list()
-            } else args <- list(sdFactor=sdFactor)
-        } else {
-            # function does not contain argument for the multiplication factor 
-            # of the standard error
-            args <- list()
-            sdFactor <- NA
-        }
-        # call the supplied function via doCall()
-        best <- sapply(names(x)[-1], 
-            function(j) doCall(fun, x[, j], sd[, j], args=args))
-    }
-    if(returnSdFactor) {
-        # return list with the first component containing the respective best 
-        # model and the second component containing the multiplication factor 
-        # of the standard error
-        list(best=best, sdFactor=sdFactor)
-    } else best
-}
+### call the supplied function for selecting the respective best model and 
+### modify the multiplication factor of the standard error as necessary
+#findBest <- function(fun, x, se, seFactor = NULL, returnSeFactor = TRUE) {
+#    formalArgs <- formals(fun)
+#    argNames <- names(formalArgs)
+#    if(length(argNames) == 1) {
+#        # only one argument for the prediction errors, call the supplied 
+#        # function directly
+#        best <- sapply(x[, -1, drop=FALSE], fun)
+#        seFactor <- NA
+#    } else {
+#        # more than one argument: first should expect the prediction errors and 
+#        # second the corresponding standard errors
+#        if("seFactor" %in% argNames) {
+#            # function contains argument for the multiplication factor of the 
+#            # standard error
+#            # if this is not is supplied, store the default value of the
+#            # supplied function
+#            # otherwise include the supplied value as extra argument in a list
+#            # (this way it can easily be extended to take additional arguments)
+#            if(is.null(seFactor)) {
+#                seFactor <- formalArgs$seFactor
+#                args <- list()
+#            } else args <- list(seFactor=seFactor)
+#        } else {
+#            # function does not contain argument for the multiplication factor 
+#            # of the standard error
+#            args <- list()
+#            seFactor <- NA
+#        }
+#        # call the supplied function via doCall()
+#        best <- sapply(names(x)[-1], 
+#            function(j) doCall(fun, x[, j], se[, j], args=args))
+#    }
+#    if(returnSeFactor) {
+#        # return list with the first component containing the respective best 
+#        # model and the second component containing the multiplication factor 
+#        # of the standard error
+#        list(best=best, seFactor=seFactor)
+#    } else best
+#}
 
 # default names
 defaultCvNames <- function(p) {
@@ -103,11 +103,6 @@ defaultFitNames <- function(m) {
     } else character()
 }
 
-# add intercept column to design matrix
-addIntercept <- function(x) {
-    cbind("(Intercept)"=rep.int(1, nrow(x)), x)
-}
-
 ## add intercept column to design matrix
 addIntercept <- function(x, check = FALSE) {
     if(!check || all(is.na(match(c("Intercept","(Intercept)"), colnames(x))))) {
@@ -115,7 +110,7 @@ addIntercept <- function(x, check = FALSE) {
     } else x
 }
 
-# remove intercept column from design matrix
+## remove intercept column from design matrix
 removeIntercept <- function(x, pos) {
     if(missing(pos)) {
         pos <- match(c("Intercept","(Intercept)"), colnames(x), nomatch = 0)
@@ -139,7 +134,7 @@ getFormula <- function(left, right, conditional = NULL) {
 getLatticeData <- function(x, ...) UseMethod("getLatticeData")
 
 getLatticeData.cv <- function(x, select = NULL, reps = TRUE, 
-        sdFactor = NA, ...) {
+        seFactor = NA, ...) {
     # extract subset of models
     x <- subset(x, select=select)
     if(reps) {
@@ -158,7 +153,7 @@ getLatticeData.cv <- function(x, select = NULL, reps = TRUE,
     if(ncv == 0) {
         # return data frame of NAs if column is not selected
         CV[, cvName] <- rep.int(as.numeric(NA), n)
-        if(!reps) SD <- as.numeric(NA)
+        if(!reps) SE <- as.numeric(NA)
     } else {
         if(!isTRUE(cvNames == cvName)) {
             CV <- lapply(cvNames, 
@@ -166,13 +161,13 @@ getLatticeData.cv <- function(x, select = NULL, reps = TRUE,
             CV <- do.call(rbind, CV)
             names(CV) <- c("Name", cvName)
         }
-        if(!reps) SD <- unname(x$sd)
+        if(!reps) SE <- unname(x$se)
     }
     # return data
     if(reps) {
         CV
     } else {
-        halflength <- sdFactor * SD
+        halflength <- seFactor * SE
         lower <- CV[, cvName] - halflength
         upper <- CV[, cvName] + halflength
         list(CV=CV, lower=lower, upper=upper)
@@ -180,7 +175,7 @@ getLatticeData.cv <- function(x, select = NULL, reps = TRUE,
 }
 
 getLatticeData.cvSelect <- function(x, subset = NULL, select = NULL, 
-        reps = TRUE, sdFactor = x$sdFactor, numericAsFactor = FALSE, ...) {
+        reps = TRUE, seFactor = x$seFactor, numericAsFactor = FALSE, ...) {
     # extract subset of models
     x <- subset(x, subset=subset, select=select)
     fits <- fits(x)
@@ -189,16 +184,16 @@ getLatticeData.cvSelect <- function(x, subset = NULL, select = NULL,
         if(is.null(CV)) stop("replications not available")
     } else {
         CV <- x$cv
-        SD <- x$sd
+        SE <- x$se
     }
     # ensure that models are shown in the correct order and drop unused levels
     # ensure that correct values are shown for a numeric tuning parameter
     if(numericAsFactor && is.double(CV$Fit)) {
         CV$Fit <- factor(shingle(CV$Fit), levels=fits)
-        if(!reps) SD$Fit <- factor(shingle(SD$Fit), levels=fits)
+        if(!reps) SE$Fit <- factor(shingle(SE$Fit), levels=fits)
     } else if(numericAsFactor || !is.numeric(CV$Fit)) {
         CV$Fit <- factor(CV$Fit, levels=fits)
-        if(!reps) SD$Fit <- factor(SD$Fit, levels=fits)
+        if(!reps) SE$Fit <- factor(SE$Fit, levels=fits)
     }
     # stack selected results on top of each other
     cvName <- defaultCvNames(1)
@@ -212,12 +207,12 @@ getLatticeData.cvSelect <- function(x, subset = NULL, select = NULL,
             # return data frame without column for conditional plots and one NA 
             CV <- data.frame(as.numeric(NA))
             names(CV) <- cvName
-            if(!reps) SD <- as.numeric(NA)
+            if(!reps) SE <- as.numeric(NA)
         } else {
             # return data frame with column for conditional plots and NA values
             CV <- data.frame(cvNames, rep.int(as.numeric(NA), ncv))
             names(CV) <- c("Name", cvName)
-            if(!reps) SD <- rep.int(as.numeric(NA), ncv)
+            if(!reps) SE <- rep.int(as.numeric(NA), ncv)
         }
     } else {
         # include column for grouping
@@ -225,19 +220,19 @@ getLatticeData.cvSelect <- function(x, subset = NULL, select = NULL,
             # no results selected: no column for conditional plots and NA values
             CV <- CV[, "Fit", drop=FALSE]
             CV[, cvName] <- rep.int(as.numeric(NA), n)
-            if(!reps) SD <- rep.int(as.numeric(NA), nfits)
+            if(!reps) SE <- rep.int(as.numeric(NA), nfits)
         } else {
             # no column for conditional plots if there is only one column of 
             # results with default name
             if(isTRUE(cvNames == cvName)) {
-                if(!reps) SD <- SD[, cvName]
+                if(!reps) SE <- SE[, cvName]
             } else {
                 CVFit <- CV[, "Fit", drop=FALSE]
                 CV <- lapply(cvNames, 
                     function(j) cbind(CVFit, Name=rep.int(j, n), CV=CV[, j]))
                 CV <- do.call(rbind, CV)
                 names(CV) <- c("Fit", "Name", cvName)
-                if(!reps) SD <- unlist(SD[, cvNames], use.names=FALSE)
+                if(!reps) SE <- unlist(SE[, cvNames], use.names=FALSE)
             }
         }
     }
@@ -245,8 +240,8 @@ getLatticeData.cvSelect <- function(x, subset = NULL, select = NULL,
     if(reps) {
         CV
     } else {
-        if(is.null(sdFactor)) sdFactor <- NA
-        halflength <- sdFactor * SD
+        if(is.null(seFactor)) seFactor <- NA
+        halflength <- seFactor * SE
         lower <- CV[, cvName] - halflength
         upper <- CV[, cvName] + halflength
         list(CV=CV, lower=lower, upper=upper)

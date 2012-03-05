@@ -7,15 +7,15 @@
 \alias{tmspe}
 \title{Prediction loss}
 \usage{
-  mspe(y, yHat, sd = FALSE)
+  mspe(y, yHat, includeSE = FALSE)
 
-  rmspe(y, yHat, sd = FALSE)
+  rmspe(y, yHat, includeSE = FALSE)
 
-  mape(y, yHat, sd = FALSE)
+  mape(y, yHat, includeSE = FALSE)
 
-  tmspe(y, yHat, trim = 0.25, sd = FALSE)
+  tmspe(y, yHat, trim = 0.25, includeSE = FALSE)
 
-  rtmspe(y, yHat, trim = 0.25, sd = FALSE)
+  rtmspe(y, yHat, trim = 0.25, includeSE = FALSE)
 }
 \arguments{
   \item{y}{a numeric vector or matrix giving the observed
@@ -27,8 +27,8 @@
   \item{trim}{a numeric value giving the trimming
   proportion (the default is 0.25).}
 
-  \item{sd}{a logical indicating whether standard errors
-  should be computed as well.}
+  \item{includeSE}{a logical indicating whether standard
+  errors should be computed as well.}
 }
 \value{
   If standard errors are not requested, a numeric value
@@ -56,7 +56,7 @@
   squared differences of the observed and fitted values are
   thereby trimmed.
 
-  Standard errors can be requested via the \code{sd}
+  Standard errors can be requested via the \code{includeSE}
   argument.  Note that standard errors for \code{tmspe} are
   based on a winsorized standard deviation.  Furthermore,
   standard errors for \code{rmspe} and \code{rtmspe} are
@@ -78,11 +78,11 @@ tmspe(coleman$Y, predict(fit), trim = 0.1)
 rtmspe(coleman$Y, predict(fit), trim = 0.1)
 
 # include standard error
-mspe(coleman$Y, predict(fit), sd = TRUE)
-rmspe(coleman$Y, predict(fit), sd = TRUE)
-mape(coleman$Y, predict(fit), sd = TRUE)
-tmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
-rtmspe(coleman$Y, predict(fit), trim = 0.1, sd = TRUE)
+mspe(coleman$Y, predict(fit), includeSE = TRUE)
+rmspe(coleman$Y, predict(fit), includeSE = TRUE)
+mape(coleman$Y, predict(fit), includeSE = TRUE)
+tmspe(coleman$Y, predict(fit), trim = 0.1, includeSE = TRUE)
+rtmspe(coleman$Y, predict(fit), trim = 0.1, includeSE = TRUE)
 }
 \author{
   Andreas Alfons
