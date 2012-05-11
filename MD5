@@ -1,6 +1,6 @@
-92de70c5d3ea91adb85af74f8ff80415 *DESCRIPTION
+eec7246a8d5a32d1b1d92e4fd453ea2a *DESCRIPTION
 3dfbab2b529557b78684f7246de5ed96 *NAMESPACE
-f6ca67b577d439593c449eb3bf9621bd *NEWS
+3f1b01cb045177949b9ed7b45fa07bf7 *NEWS
 567c1f47103487f6623bf8687a0d9147 *R/accessors.R
 38b3a4b29c70ac2da562c21d00691c3c *R/aggregate.R
 0c07168914e5627f96633e5dff9138e3 *R/bwplot.R
@@ -9,8 +9,8 @@ f6ca67b577d439593c449eb3bf9621bd *NEWS
 24398fd63f63f6438b805663588163f0 *R/cvFolds.R
 2f7c7925df9a7b04b8283c04ab366fbe *R/cvReshape.R
 3e9e4d194ca13f48aefea0b2385bd732 *R/cvSelect.R
-ee79093d1e09259dade052eb2352dd05 *R/cvTool.R
-5c0c47b578a311239250500991a7b7e4 *R/cvTuning.R
+0aed4e086818771448c568aa2c7af4b6 *R/cvTool.R
+b37d22ccf1fe32d10dfb590c94e82524 *R/cvTuning.R
 e4fdd61e76c8343e764aa239570bfa19 *R/densityplot.R
 87f4f13c6f622735fc6386352f5ff6e9 *R/dotplot.R
 e649978d04434760d0e622c066e8d38a *R/plot.R
@@ -36,6 +36,12 @@ ef335dd66da19918ce14c845a881dce7 *inst/doc/examples/example-plot.R
 331c3a0cf8fbedb337fb28d8d8447656 *inst/doc/examples/example-subset.R
 09ff2ea3c53522657e74e01ffa7096a6 *inst/doc/examples/example-summary.R
 0f3e66e0c10f34c66c4dc03aea3bc4ff *inst/doc/examples/example-xyplot.R
+b71262e7b7e8fccff7cbe0c5d8a80236 *inst/tests/test-cvFit-once.R
+8a789bb2f1b2c8bec45285c63e990c30 *inst/tests/test-cvFit-repeated.R
+404c318b66d66c56fda010f389208b50 *inst/tests/test-cvTool-once.R
+613746250d229435adb92b21855ca148 *inst/tests/test-cvTool-repeated.R
+36bc6638e1910b589df79d898e283a42 *inst/tests/test-cvTuning-once.R
+c3aeaba922f9238cb3f1f787dd19fcd8 *inst/tests/test-cvTuning-repeated.R
 be915e96939dffdcd8b6e4b0b18bcca6 *man/accessors.Rd
 04a6badc4198b636bb1748bf66abbe3c *man/aggregate.cv.Rd
 ac323b29b7a1b77e70469fe7dff488c2 *man/bwplot.cv.Rd
@@ -45,7 +51,7 @@ c3455f9c21a42fce405f2b739c8f99c8 *man/cvFolds.Rd
 0977d181cc3f24c3c6e65976a036100d *man/cvReshape.Rd
 90b39d534f20de6c8cf1cd9e81dbf832 *man/cvSelect.Rd
 6988e084820a825fde952e4553351958 *man/cvTool.Rd
-2c09b592473262e2760c12a0db1c5fe7 *man/cvTools-package.Rd
+5689a1bc84a1d720f2a3686f5c8a1d3a *man/cvTools-package.Rd
 765e864c121f7ad4201d9352a4b3f8c9 *man/cvTuning.Rd
 1f1e5620a7f0540c04a0fdb00791b050 *man/densityplot.cv.Rd
 c2fa7450ae123ccce6ac283c5b7f68e7 *man/dotplot.cv.Rd
